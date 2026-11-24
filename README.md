@@ -3,9 +3,9 @@
 The site for [sunbird](https://github.com/sunbird-tools/sunbird). It patches Discord's Phoenix
 client in the browser and serves the files that installed builds check for updates.
 
-The patcher, the loader libraries and the plugin bundles come from sunbird's `site` release, which
-its CI publishes on every push to `main`. This repo checks that release every 10 minutes and
-redeploys when it changed.
+The patcher, the loader libraries and the plugin bundles come from `site.tar.gz` on
+assets.sunbird.tools, which sunbird's CI deploys on every push to `main`. This repo checks it every
+10 minutes and redeploys when it changed.
 
 ## Local
 

@@ -1,14 +1,15 @@
 # Puts what sunbird-tools/sunbird builds where the site reads it: the patcher
 # as wasm into src/pkg for the worker to import, and the loader libraries, the
 # plugin bundles with their index and version.json into public/. With no
-# argument it takes the `site` release, with one it copies a local checkout's
-# web/ after `nu scripts/site.nu web` and bundle-plugins.mjs ran there.
+# argument it takes site.tar.gz from assets.sunbird.tools, with one it copies
+# a local checkout's web/ after `nu scripts/site.nu web` and
+# bundle-plugins.mjs ran there.
 
 def main [checkout?: path] {
    let root = $env.FILE_PWD | path dirname
    let staging = mktemp -d
    if $checkout == null {
-      ^gh release download site -R sunbird-tools/sunbird -p site.tar.gz -O - | ^tar xz -C $staging
+      ^curl -fsSL https://assets.sunbird.tools/site.tar.gz | ^tar xz -C $staging
    } else {
       let web = $checkout | path expand | path join web
       for item in [pkg plugins version.json] { cp -r ($web | path join $item) $staging }

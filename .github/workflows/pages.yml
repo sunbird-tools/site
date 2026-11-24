@@ -3,8 +3,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  # sunbird-tools/sunbird republishes its `site` release on every push to main. Polling it needs
-  # no token, and the check job skips the build while the deployed release is current.
+  # sunbird-tools/sunbird redeploys assets.sunbird.tools on every push to main. The check job
+  # compares its site.tar.gz Last-Modified with the deployed one and skips the build if equal.
   schedule:
     - cron: '*/10 * * * *'
 permissions:
@@ -23,12 +23,10 @@ jobs:
     steps:
       - id: release
         run: |
-          release=$(gh api repos/sunbird-tools/sunbird/releases/tags/site --jq '.assets[] | select(.name == "site.tar.gz") | .updated_at')
+          release=$(curl -fsSI https://assets.sunbird.tools/site.tar.gz | tr -d '\r' | sed -n 's/^last-modified: //Ip')
           deployed=$(curl -fsS https://sunbird.tools/release.txt || true)
           echo "release=$release" >> "$GITHUB_OUTPUT"
           echo "stale=$([ "$release" != "$deployed" ] || [ "${{ github.event_name }}" != schedule ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ github.token }}
   build:
     needs: check
     if: needs.check.outputs.stale == 'true'
@@ -37,11 +35,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
       - run: |
-          mkdir -p staging public && gh release download site -R sunbird-tools/sunbird -p site.tar.gz -O - | tar xz -C staging
+          mkdir -p staging public && curl -fsSL https://assets.sunbird.tools/site.tar.gz | tar xz -C staging
           mv staging/pkg src/pkg && mv staging/plugins staging/version.json public/
           echo -n '${{ needs.check.outputs.release }}' > public/release.txt
-        env:
-          GH_TOKEN: ${{ github.token }}
       - uses: actions/cache@v4
         with:
           path: .cache/data-store.json
