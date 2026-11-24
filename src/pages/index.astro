@@ -1,6 +1,7 @@
 ---
 import Contributors from '../components/Contributors.astro';
 import Manual from '../components/Manual.astro';
+import Platforms from '../components/Platforms.astro';
 import Plugins from '../components/Plugins.astro';
 import Progress from '../components/Progress.astro';
 import Result from '../components/Result.astro';
@@ -15,61 +16,7 @@ import Base from '../layouts/Base.astro';
    <header class="head">
       <h1>Sunbird</h1>
       <p class="lede">Unlock Discord's native Android client <em>and</em> bundle plugins!</p>
-      <ul class="arch" aria-label="Architecture support">
-         <li class="ready" title="Supported">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-               <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.3" />
-               <path
-                  d="M3.75 6.15 5.3 7.7 8.4 4.5"
-                  stroke="currentColor"
-                  stroke-width="1.3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-               />
-            </svg>
-            <span>arm64</span>
-         </li>
-         <li class="ready" title="Supported">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-               <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.3" />
-               <path
-                  d="M3.75 6.15 5.3 7.7 8.4 4.5"
-                  stroke="currentColor"
-                  stroke-width="1.3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-               />
-            </svg>
-            <span>armv7</span>
-         </li>
-         <li class="wip" title="In progress">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-               <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.3" opacity="0.3" />
-               <path
-                  d="M6 1a5 5 0 1 1-5 5"
-                  stroke="currentColor"
-                  stroke-width="1.3"
-                  stroke-linecap="round"
-               />
-            </svg>
-            <span>x86_64</span>
-         </li>
-         {(['x86'] as const).map((abi) => (
-            <li class="planned" title="Planned">
-               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <circle
-                     cx="6"
-                     cy="6"
-                     r="5"
-                     stroke="currentColor"
-                     stroke-width="1.3"
-                     stroke-dasharray="2.4 2.4"
-                  />
-               </svg>
-               <span>{abi}</span>
-            </li>
-         ))}
-      </ul>
+      <Platforms />
    </header>
 
    <Setup />
@@ -104,54 +51,6 @@ import Base from '../layouts/Base.astro';
    margin-top: 20px;
    font-size: 15.5px;
    color: var(--muted);
-}
-
-.arch {
-   display: flex;
-   flex-wrap: wrap;
-   gap: 8px;
-   margin: 20px 0 0;
-   padding: 0;
-   list-style: none;
-   font: 500 12px / 1 var(--mono-family);
-
-   & li {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 9px;
-      border-radius: var(--radius);
-   }
-
-   & .ready {
-      color: var(--text);
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-
-      & svg {
-         color: var(--ok);
-      }
-   }
-
-   & .wip {
-      color: var(--text);
-      background: var(--surface);
-      border: 1px solid var(--border);
-
-      & svg {
-         color: var(--warn);
-      }
-   }
-
-   & .planned {
-      color: var(--muted);
-      border: 1px dashed var(--border);
-
-      & svg {
-         color: var(--muted);
-         opacity: 0.7;
-      }
-   }
 }
 
 .actions {
