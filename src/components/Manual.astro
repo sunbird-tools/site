@@ -1,20 +1,60 @@
-<section class="card" id="manual" hidden>
+<section class="box panel" id="manual" hidden>
    <p class="note">
-      <b>Automatic download isn't available.</b>
-      Download these files, then pick all of them below.
+      <b>Automatic download is unavailable.</b>{' '}Download these split APKs, then select all of
+      them below.
    </p>
    <ul id="links"></ul>
-   <input
-      type="file"
-      id="files"
-      multiple
-      accept=".apk,application/vnd.android.package-archive,application/octet-stream"
-   >
+   <label class="file-picker">
+      <input
+         type="file"
+         id="files"
+         multiple
+         accept=".apk,application/vnd.android.package-archive,application/octet-stream"
+      >
+      <span class="file-btn">Select APK files</span>
+      <span class="file-label" id="manual-files-label">Choose all downloaded splits</span>
+   </label>
 </section>
 
 <style>
+.panel {
+   margin-top: 14px;
+   padding: 16px;
+}
+
 ul {
-   padding-left: 18px;
-   font-size: 14px;
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+   margin: 12px 0 0;
+   padding: 0;
+   list-style: none;
+}
+
+ul :global(a) {
+   display: inline-block;
+   padding: 5px 10px;
+   font: var(--mono);
+   color: var(--text);
+   background: var(--bg);
+   border: 1px solid var(--border);
+   border-radius: var(--radius);
+   text-decoration: none;
+   transition: border-color 0.12s;
+
+   &:hover {
+      border-color: var(--text);
+   }
 }
 </style>
+
+<script>
+import { byId } from '../lib/dom';
+
+const input = byId('files', HTMLInputElement);
+const label = byId('manual-files-label', HTMLElement);
+input.addEventListener('change', () => {
+   const count = input.files?.length ?? 0;
+   label.textContent = count > 0 ? `${count} APK files selected` : 'Choose all downloaded splits';
+});
+</script>

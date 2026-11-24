@@ -6,38 +6,45 @@ const contributors = (await getCollection('contributors'))
    .sort((left, right) => right.contributions - left.contributions);
 ---
 
-<h2>Contributors</h2>
-<section class="card">
-   {contributors.map(({ name, url, avatar }) => (
-         <a href={url}>
-            <img src={`${avatar}&s=96`} alt="" width="48" height="48" loading="lazy" />
-            {name}
-         </a>
-      ))}
+<section class="group">
+   <div class="group-head">
+      <h2>Contributors</h2>
+   </div>
+   <div class="contributors">
+      {contributors.map(({ name, url, avatar }) => (
+            <a class="contributor" href={url}>
+               <img src={`${avatar}&s=48`} alt="" width="22" height="22" loading="lazy" />
+               <span>{name}</span>
+            </a>
+         ))}
+   </div>
 </section>
 
 <style>
-section {
+.contributors {
    display: flex;
    flex-wrap: wrap;
-   gap: 12px 24px;
+   gap: 8px 20px;
 }
 
-a {
-   display: flex;
+.contributor {
+   display: inline-flex;
    align-items: center;
-   gap: 10px;
-   font-weight: 600;
+   gap: 8px;
+   padding: 4px 0;
+   font-size: 13.5px;
+   color: var(--text);
    text-decoration: none;
-   color: var(--fg);
 
    &:hover {
-      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
    }
 }
 
 img {
+   display: block;
    border-radius: 50%;
-   background: var(--line);
+   background: var(--border);
 }
 </style>

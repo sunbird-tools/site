@@ -1,4 +1,4 @@
-<section class="card" id="progress" hidden>
+<section class="box panel" id="progress" hidden>
    <ol id="steps"></ol>
    <pre id="log"></pre>
    <template id="step">
@@ -11,33 +11,54 @@
 </section>
 
 <style>
+.panel {
+   margin-top: 14px;
+   padding: 14px 16px;
+}
+
 ol {
    margin: 0;
    padding: 0;
-   font-size: 14px;
+   font-size: 13.5px;
    list-style: none;
 }
 
 li {
    display: grid;
    grid-template-columns: 1fr auto;
-   gap: 2px 8px;
-   padding: 6px 0;
+   gap: 5px 12px;
+   padding: 7px 0;
+
+   & + & {
+      border-top: 1px solid var(--border);
+   }
+}
+
+.label {
+   font-weight: 500;
 }
 
 .bar {
    grid-column: 1 / -1;
-   height: 4px;
+   height: 3px;
    overflow: hidden;
-   background: var(--line);
+   background: var(--border);
    border-radius: 2px;
 
    & i {
       display: block;
       width: 0;
       height: 100%;
-      background: var(--accent);
-      transition: width 0.2s;
+      background: var(--text);
+      transition: width 0.16s ease-out;
+   }
+
+   .done & i {
+      background: var(--ok);
+   }
+
+   .fail & i {
+      background: var(--err);
    }
 }
 
@@ -55,11 +76,19 @@ li {
 }
 
 pre {
-   max-height: 180px;
-   margin: 10px 0 0;
+   max-height: 200px;
+   margin: 12px 0 0;
+   padding: 10px 12px;
    overflow: auto;
    font: var(--mono);
    white-space: pre-wrap;
    color: var(--muted);
+   background: var(--bg);
+   border: 1px solid var(--border);
+   border-radius: var(--radius);
+
+   &:empty {
+      display: none;
+   }
 }
 </style>

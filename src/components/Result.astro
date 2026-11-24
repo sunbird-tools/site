@@ -1,19 +1,44 @@
-<section class="card" id="result" hidden>
+<section class="box result" id="result" hidden>
    <!-- biome-ignore lint/a11y/useValidAnchor: patch.ts sets href to the APK's object URL -->
-   <a class="button" id="dl" download>Download patched APK</a>
-   <p class="note">
-      <span id="note-side"
-         >1. It installs as <b>Discord Phoenix</b>, next to your normal Discord, and you sign in
-         once.</span
-      >
-      <span id="note-replace" hidden>
-         1. Uninstall Discord first if it came from the Play Store; Android won't update an app
-         signed with a different key.
-      </span>
-      <br>
-      2. Open the downloaded file and allow your browser to install apps if asked.<br>
-      3. Later builds: just patch again. Builds are signed with Phoenix Unlock's key, rotated from
-      the one earlier builds used, so it installs as an update over either (Android 9+) and you stay
-      logged in.
-   </p>
+   <a class="button dl" id="dl" download>Download patched APK</a>
+   <ol class="steps-list">
+      <li id="note-side">Installs as <b>Discord Phoenix</b> alongside your regular Discord.</li>
+      <li id="note-replace" hidden>
+         Uninstall Play Store Discord first, since Android won't overwrite an app signed with a
+         different key.
+      </li>
+      <li>Open the downloaded APK and allow your browser to install apps if prompted.</li>
+      <li>
+         To update later, patch again and install over the existing app to stay signed in (Android
+         9+).
+      </li>
+   </ol>
 </section>
+
+<style>
+.result {
+   margin-top: 14px;
+   padding: 16px;
+   border-color: var(--border-strong);
+}
+
+.dl {
+   width: 100%;
+}
+
+.steps-list {
+   margin: 14px 0 0;
+   padding-left: 18px;
+   font-size: 13.5px;
+   color: var(--muted);
+
+   & li {
+      padding: 2px 0;
+   }
+
+   & b {
+      color: var(--text);
+      font-weight: 600;
+   }
+}
+</style>

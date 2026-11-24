@@ -2,114 +2,299 @@
 import { getCollection } from 'astro:content';
 
 const plugins = await getCollection('plugins');
+const defaultSelected = plugins.filter(({ data }) => data.name !== 'example').length;
 ---
 
-<h2>Plugins</h2>
-<section class="card">
-   <label class="plugin">
-      <input type="checkbox" id="runtime" checked>
-      <b>Plugin runtime</b>
-      <span>
-         Phoenix Unlock's plugin runtime, with native hooks through ShadowHook. Pick ready-made
-         plugins and/or add your own below; manage them in Discord Settings → Phoenix. Off: only the
-         access patches.
-      </span>
-   </label>
-   <label class="plugin">
-      <input type="checkbox" id="frida-on">
-      <b>Frida gadget (advanced)</b>
-      <span>
-         Embeds frida-gadget (+40 MB) for Frida scripts and debugging: a floating JS panel, a
-         console and an optional debug shell. Not needed for the plugins above.
-      </span>
-   </label>
-</section>
-
-<section class="card" id="jsp">
-   <p class="note"><b>Include</b></p>
-   <div id="jsp-bundled">
-      {plugins.map(({ data: plugin }) => (
-            <label class="plugin">
-               {/* example is a demo of the API, so it is opt-in */}
-               <input type="checkbox" value={plugin.name} checked={plugin.name !== 'example'} />
-               <b>{plugin.name}</b>
-               <span>{plugin.description}</span>
-               {plugin.warning && <small class="warn">⚠ {plugin.warning}</small>}
-            </label>
-         ))}
+<section class="group">
+   <div class="group-head">
+      <h2>Plugins</h2>
+      <div class="plugin-controls" id="plugin-controls">
+         <span class="count" id="plugin-count"> {defaultSelected} of {plugins.length} </span>
+         <button type="button" class="text-btn" id="plugins-all">All</button>
+         <button type="button" class="text-btn" id="plugins-none">None</button>
+      </div>
    </div>
-   <p class="note">
-      <b>Your plugins</b>
-      run next to the ones above (the global <code>phoenix</code> API, plain scripts; types in
-      <a href="https://github.com/sunbird-tools/sunbird/blob/main/crates/runtime/phoenix.d.ts"
-         >phoenix.d.ts</a
-      >). Leading
-      <code>// @description</code>, <code>// @version</code> and
-      <code>// @author</code>
-      lines describe it in Discord Settings → Phoenix; a file is named after itself. Optional: pick
-      .js files and/or write one below.
-   </p>
-   <input type="file" id="jsp-files" multiple accept=".js,text/javascript">
-   <textarea
-      id="jsp-code"
-      rows="8"
-      spellcheck="false"
-      aria-label="Your plugin"
-      placeholder={`// @description Logs incoming messages (adb logcat -s phoenix)\nphoenix.on(phoenix.gateway.messageCreate, (m) => phoenix.log.info(m.author?.username, ':', m.content));`}
-   ></textarea>
-</section>
 
-<section class="card" id="frida" hidden>
-   <p class="note">
-      <b>Frida scripts</b>
-      run inside Discord when it starts (Frida 17 API with <code>Java</code>, plain scripts without
-      imports). The ones you pick here are installed on first start; in the app, the floating
-      <b>JS</b>
-      button opens a panel to turn plugins on and off, add more from a URL, reload them, and see
-      their console.
-   </p>
-   <input type="file" id="frida-files" multiple accept=".js,text/javascript">
-   <textarea id="frida-code" rows="10" spellcheck="false" aria-label="Frida script"></textarea>
+   <div class="box">
+      <label class="runtime-row">
+         <input type="checkbox" class="switch" id="runtime" checked>
+         <span>
+            <span class="row-title">Plugin runtime</span>
+            <span class="row-desc">
+               Manage plugins in Discord under Settings → Phoenix. Turn off for access patches only.
+            </span>
+         </span>
+      </label>
+
+      <div id="jsp">
+         <div class="plugin-grid" id="jsp-bundled">
+            {plugins.map(({ data: plugin }) => (
+                  <label class="plugin-item">
+                     {/* example is a demo of the API, so it is opt-in */}
+                     <input type="checkbox" value={plugin.name} checked={plugin.name !== 'example'} />
+                     <span class="plugin-copy">
+                        <span class="plugin-name">{plugin.name}</span>
+                        <span class="plugin-desc">{plugin.description}</span>
+                        {plugin.warning && <span class="plugin-warn">{plugin.warning}</span>}
+                     </span>
+                  </label>
+               ))}
+         </div>
+
+         <details class="extra" id="custom-panel">
+            <summary>
+               <span>Custom plugins</span>
+               <span class="extra-meta" id="jsp-custom-meta">Optional</span>
+            </summary>
+            <div class="extra-body">
+               <p class="note">
+                  Add <code>.js</code> files or write a script using the global{' '}
+                  <code>phoenix</code>{' '}API (
+                  <a
+                     href="https://github.com/sunbird-tools/sunbird/blob/main/crates/runtime/phoenix.d.ts"
+                     >phoenix.d.ts</a
+                  >
+                  ).
+               </p>
+               <label class="file-picker">
+                  <input type="file" id="jsp-files" multiple accept=".js,text/javascript">
+                  <span class="file-btn">Choose .js files</span>
+                  <span class="file-label" id="jsp-files-label">No files selected</span>
+               </label>
+               <textarea
+                  id="jsp-code"
+                  rows="7"
+                  spellcheck="false"
+                  aria-label="Custom plugin code"
+                  placeholder={`// @description Logs incoming messages (adb logcat -s phoenix)\n// @version 1.0.0\nphoenix.on(phoenix.gateway.messageCreate, (m) => phoenix.log.info(m.author?.username, ':', m.content));`}
+               ></textarea>
+            </div>
+         </details>
+      </div>
+
+      <details class="extra" id="advanced-panel">
+         <summary>
+            <span>Frida gadget</span>
+            <span class="extra-meta">Advanced · +40 MB</span>
+         </summary>
+         <div class="extra-body">
+            <label class="frida-toggle">
+               <input type="checkbox" class="switch" id="frida-on">
+               <span>
+                  <span class="row-title">Embed frida-gadget</span>
+                  <span class="row-desc">
+                     Runs Frida 17 scripts at startup and adds a floating JS console for debugging.
+                  </span>
+               </span>
+            </label>
+
+            <div class="frida-panel" id="frida" hidden>
+               <p class="note">
+                  Plain scripts without imports (<code>Java</code>{' '}is available). Installed on
+                  first launch and manageable from the floating{' '}<b>JS</b>{' '}button.
+               </p>
+               <label class="file-picker">
+                  <input type="file" id="frida-files" multiple accept=".js,text/javascript">
+                  <span class="file-btn">Choose .js files</span>
+                  <span class="file-label" id="frida-files-label">No files selected</span>
+               </label>
+               <textarea
+                  id="frida-code"
+                  rows="9"
+                  spellcheck="false"
+                  aria-label="Frida script"
+               ></textarea>
+            </div>
+         </div>
+      </details>
+   </div>
 </section>
 
 <style>
-.plugin {
-   display: grid;
-   grid-template-columns: auto 1fr;
-   gap: 2px 12px;
-   align-items: start;
-   padding: 10px 0;
-   border-bottom: 1px solid var(--line);
-   cursor: pointer;
+.plugin-controls {
+   display: flex;
+   align-items: baseline;
+   gap: 12px;
+   font-size: 13px;
+}
 
-   &:last-child {
-      border-bottom: 0;
-   }
+.count {
+   color: var(--muted);
+   font-variant-numeric: tabular-nums;
+}
 
-   & input {
-      grid-row: 1 / 3;
-      width: 20px;
-      height: 20px;
-      margin: 2px 0 0;
-      accent-color: var(--accent);
-      cursor: pointer;
-   }
+.text-btn {
+   padding: 0;
+   font-size: 13px;
+   font-weight: 600;
+   color: var(--muted);
+   background: none;
+   border: 0;
 
-   & b {
-      font-weight: 600;
-   }
-
-   & span {
-      font-size: 14px;
-      color: var(--muted);
+   &:hover:not(:disabled) {
+      background: none;
+      border-color: transparent;
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
    }
 }
 
-.warn {
-   grid-column: 2;
+.runtime-row,
+.frida-toggle {
+   display: flex;
+   align-items: center;
+   gap: 16px;
+   cursor: pointer;
+
+   & input {
+      order: 1;
+      margin-left: auto;
+   }
+}
+
+.runtime-row {
+   padding: 14px 16px;
+}
+
+.row-title {
+   display: block;
+   font-size: 14px;
+   font-weight: 600;
+   color: var(--text);
+}
+
+.row-desc {
+   display: block;
    margin-top: 2px;
    font-size: 13px;
+   color: var(--muted);
+}
+
+.plugin-grid {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: 8px;
+   padding: 14px 16px 16px;
+   border-top: 1px solid var(--border);
+}
+
+.plugin-item {
+   display: flex;
+   align-items: flex-start;
+   gap: 10px;
+   padding: 11px 12px;
+   background: var(--bg);
+   border: 1px solid var(--border);
+   border-radius: calc(var(--radius) - 2px);
+   cursor: pointer;
+   transition:
+      background-color 0.12s,
+      border-color 0.12s;
+
+   &:hover {
+      border-color: var(--border-strong);
+   }
+
+   &:not(:has(input:checked)) {
+      background: transparent;
+      border-style: dashed;
+   }
+
+   & input {
+      margin-top: 2px;
+   }
+}
+
+.plugin-copy {
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   min-width: 0;
+}
+
+.plugin-item:not(:has(input:checked)) .plugin-copy {
+   opacity: 0.6;
+}
+
+.plugin-name {
+   font: 600 13px / 1.35 var(--mono-family);
+   color: var(--text);
+}
+
+.plugin-desc {
+   font-size: 12.5px;
+   line-height: 1.45;
+   color: var(--muted);
+}
+
+.plugin-warn {
+   margin-top: 3px;
+   font-size: 12px;
+   line-height: 1.4;
    color: var(--warn);
+}
+
+.extra {
+   border-top: 1px solid var(--border);
+}
+
+.extra > summary {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   padding: 13px 16px;
+   font-size: 14px;
+   font-weight: 600;
+   color: var(--text);
+   list-style: none;
+   cursor: pointer;
+   user-select: none;
+   transition: background-color 0.12s;
+
+   &:hover {
+      background: var(--hover);
+   }
+
+   &::-webkit-details-marker {
+      display: none;
+   }
+
+   &::after {
+      content: "";
+      width: 11px;
+      height: 11px;
+      background:
+         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 11 11'%3E%3Cpath d='M2 3.75 5.5 7.25 9 3.75' fill='none' stroke='%238b929c' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+         center / 11px no-repeat;
+      transition: transform 0.14s;
+   }
+}
+
+.extra[open] > summary::after {
+   transform: rotate(180deg);
+}
+
+.extra-meta {
+   margin-left: auto;
+   font-weight: 400;
+   color: var(--muted);
+}
+
+.extra-body {
+   padding: 4px 16px 16px;
+}
+
+.frida-panel {
+   margin-top: 12px;
+   padding-top: 12px;
+   border-top: 1px solid var(--border);
+}
+
+@media (max-width: 600px) {
+   .plugin-grid {
+      grid-template-columns: 1fr;
+   }
 }
 </style>
 
@@ -117,16 +302,76 @@ const plugins = await getCollection('plugins');
 import { FRIDA } from '../lib/discord';
 import { byId } from '../lib/dom';
 
-// Browsers may restore a checkbox on reload, so the sections follow its current state.
-const toggle = (box: string, section: string) => {
-   const input = byId(box, HTMLInputElement);
-   const sync = () => (byId(section, HTMLElement).hidden = !input.checked);
-   input.onchange = sync;
-   sync();
+const runtime = byId('runtime', HTMLInputElement);
+const jsp = byId('jsp', HTMLElement);
+const pluginControls = byId('plugin-controls', HTMLElement);
+const syncRuntime = () => {
+   jsp.hidden = !runtime.checked;
+   pluginControls.hidden = !runtime.checked;
+};
+runtime.onchange = syncRuntime;
+syncRuntime();
+
+const fridaOn = byId('frida-on', HTMLInputElement);
+const frida = byId('frida', HTMLElement);
+const advanced = byId('advanced-panel', HTMLDetailsElement);
+const syncFrida = () => {
+   frida.hidden = !fridaOn.checked;
+   if (fridaOn.checked) advanced.open = true;
+};
+fridaOn.onchange = syncFrida;
+syncFrida();
+
+const boxes = [...document.querySelectorAll<HTMLInputElement>('#jsp-bundled input')];
+const count = byId('plugin-count', HTMLElement);
+const updateCount = () => {
+   const picked = boxes.filter((box) => box.checked).length;
+   count.textContent = `${picked} of ${boxes.length}`;
+};
+for (const box of boxes) box.onchange = updateCount;
+updateCount();
+
+byId('plugins-all', HTMLButtonElement).onclick = () => {
+   for (const box of boxes) box.checked = true;
+   updateCount();
 };
 
-toggle('runtime', 'jsp');
-toggle('frida-on', 'frida');
+byId('plugins-none', HTMLButtonElement).onclick = () => {
+   for (const box of boxes) box.checked = false;
+   updateCount();
+};
+
+function bindFileLabel(inputId: string, labelId: string, onUpdate?: (count: number) => void) {
+   const input = byId(inputId, HTMLInputElement);
+   const label = byId(labelId, HTMLElement);
+   const sync = () => {
+      const files = [...(input.files ?? [])];
+      const [first] = files;
+      if (!first) label.textContent = 'No files selected';
+      else if (files.length === 1) label.textContent = first.name;
+      else label.textContent = `${files.length} files: ${files.map((f) => f.name).join(', ')}`;
+      onUpdate?.(files.length);
+   };
+   input.addEventListener('change', sync);
+   sync();
+}
+
+const customMeta = byId('jsp-custom-meta', HTMLElement);
+const customCode = byId('jsp-code', HTMLTextAreaElement);
+const customFiles = byId('jsp-files', HTMLInputElement);
+const syncCustomMeta = () => {
+   const files = customFiles.files?.length ?? 0;
+   const hasCode = customCode.value.trim().length > 0;
+   const parts: string[] = [];
+   if (files > 0) parts.push(`${files} ${files === 1 ? 'file' : 'files'}`);
+   if (hasCode) parts.push('inline script');
+   customMeta.textContent = parts.length ? parts.join(' + ') : 'Optional';
+};
+bindFileLabel('jsp-files', 'jsp-files-label', syncCustomMeta);
+customCode.addEventListener('input', syncCustomMeta);
+syncCustomMeta();
+
+bindFileLabel('frida-files', 'frida-files-label');
 
 fetch(FRIDA.example)
    .then((response) => (response.ok ? response.text() : ''))

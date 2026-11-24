@@ -21,6 +21,12 @@ import type { Library, PatchReply, PatchRequest } from '../lib/protocol';
 
 const go = byId('go', HTMLButtonElement);
 const failure = byId('err', HTMLParagraphElement);
+let apkUrl: string | null = null;
+
+function setBusy(busy: boolean) {
+   go.disabled = busy;
+   go.textContent = busy ? 'Patching…' : 'Patch Discord →';
+}
 
 function patch(request: PatchRequest): Promise<Blob> {
    return new Promise((resolve, reject) => {
@@ -82,7 +88,9 @@ async function patchAndOffer(code: number, apks: Uint8Array[]) {
    byId('note-side', HTMLElement).hidden = !side;
    byId('note-replace', HTMLElement).hidden = side;
    const link = byId('dl', HTMLAnchorElement);
-   link.href = URL.createObjectURL(apk);
+   if (apkUrl) URL.revokeObjectURL(apkUrl);
+   apkUrl = URL.createObjectURL(apk);
+   link.href = apkUrl;
    link.download = `discord-${code}-phoenix-unlock${side ? '-side' : ''}.apk`;
    byId('result', HTMLElement).hidden = false;
    link.scrollIntoView({ behavior: 'smooth' });
@@ -90,9 +98,9 @@ async function patchAndOffer(code: number, apks: Uint8Array[]) {
 
 function fail(error: unknown) {
    console.error(error);
-   failure.textContent = `Something went wrong: ${error instanceof Error ? error.message : String(error)}`;
+   failure.textContent = `Patch failed: ${error instanceof Error ? error.message : String(error)}`;
    failure.hidden = false;
-   go.disabled = false;
+   setBusy(false);
 }
 
 /** The user downloads the splits, and the patcher tells them apart by content. */
@@ -116,15 +124,17 @@ function showManual(splits: Splits) {
    );
 
    byId('manual', HTMLElement).hidden = false;
+   setBusy(false);
 
    byId('files', HTMLInputElement).onchange = async ({ target }) => {
       try {
+         setBusy(true);
          const files = [...((target as HTMLInputElement).files ?? [])];
          await patchAndOffer(
             splits.code,
             await Promise.all(files.map(async (file) => new Uint8Array(await file.arrayBuffer()))),
          );
-         go.disabled = false;
+         setBusy(false);
       } catch (error) {
          fail(error);
       }
@@ -133,16 +143,16 @@ function showManual(splits: Splits) {
 
 go.onclick = async () => {
    if (!checkPackage()) {
-      failure.textContent =
-         'Package name must look like com.example.app (letters, digits, _; at least two parts) and differ from com.discord.';
+      failure.textContent = 'Use a valid package name like com.discord.phoenix (not com.discord).';
       failure.hidden = false;
       byId('pkg', HTMLInputElement).focus();
       return;
    }
 
    const splits = readSplits();
-   go.disabled = true;
+   setBusy(true);
    failure.hidden = true;
+   byId('manual', HTMLElement).hidden = true;
    byId('result', HTMLElement).hidden = true;
    resetProgress();
    if (!PROXY) return showManual(splits);
@@ -153,7 +163,7 @@ go.onclick = async () => {
       const density = await downloadDensity(splits.code, splits.density);
       const language = splits.language ? await tryDownload(splits.code, splits.language) : null;
       await patchAndOffer(splits.code, [base, abi, density, ...(language ? [language] : [])]);
-      go.disabled = false;
+      setBusy(false);
    } catch (error) {
       // fetch throws TypeError when CORS or the network blocks the proxy.
       if (!(error instanceof TypeError)) return fail(error);

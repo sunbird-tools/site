@@ -10,37 +10,198 @@ import Base from '../layouts/Base.astro';
 
 <Base
    title="Phoenix Unlock"
-   description="Patch Discord's Phoenix client in your browser: no access gate, plugins built in."
+   description="Patch Discord's native Android client in your browser with plugins built in."
 >
-   <h1>Phoenix Unlock</h1>
-   <p class="lede">
-      Patches Discord's new native client (Phoenix) so it opens without the access gate, with
-      Phoenix Unlock's plugin runtime and the plugins you pick built in. It all runs in this
-      browser; nothing is uploaded.
-   </p>
+   <nav class="top">
+      <span class="wordmark"><span class="dot" aria-hidden="true"></span>sunbird</span>
+      <a href="https://github.com/sunbird-tools/sunbird">Source ↗</a>
+   </nav>
+
+   <header class="head">
+      <h1>Phoenix Unlock</h1>
+      <p class="lede">
+         Patch Discord's native Android client with plugins built in. The APK is built in this
+         browser and never leaves your device.
+      </p>
+      <ul class="facts">
+         <li>Client-side</li>
+         <li>arm64</li>
+         <li>Signed v3</li>
+         <li>Updates in place</li>
+      </ul>
+   </header>
 
    <Setup />
    <Plugins />
 
-   <button type="button" id="go">Patch Discord</button>
-   <p class="err" id="err" hidden></p>
+   <div class="actions">
+      <div class="actions-inner">
+         <p class="summary" id="summary"></p>
+         <button type="button" id="go">Patch Discord →</button>
+      </div>
+      <p class="err" id="err" hidden></p>
+   </div>
 
    <Progress />
    <Manual />
    <Result />
    <Contributors />
 
-   <p class="note">
-      Unofficial and not affiliated with Discord. Source:
-      <a href="https://github.com/sunbird-tools/sunbird">github.com/sunbird-tools/sunbird</a>
-   </p>
+   <footer class="foot">
+      <span>Unofficial and not affiliated with Discord.</span>
+      <a href="https://github.com/sunbird-tools/sunbird">sunbird-tools/sunbird</a>
+   </footer>
 </Base>
 
 <style>
+.top {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   font-size: 14px;
+
+   & a {
+      color: var(--muted);
+      text-decoration: none;
+
+      &:hover {
+         color: var(--text);
+      }
+   }
+}
+
+.wordmark {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   font-size: 16px;
+   font-weight: 800;
+   letter-spacing: -0.03em;
+}
+
+.dot {
+   width: 10px;
+   height: 10px;
+   background: var(--accent);
+   transform: rotate(45deg);
+}
+
+.head {
+   padding: 56px 0 8px;
+}
+
 .lede {
-   margin: 0 0 20px;
+   max-width: 52ch;
+   margin-top: 20px;
+   font-size: 15.5px;
    color: var(--muted);
+}
+
+.facts {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px 18px;
+   margin: 22px 0 0;
+   padding: 0;
+   font-size: 13px;
+   font-weight: 600;
+   color: var(--text);
+   list-style: none;
+
+   & li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &::before {
+         content: "";
+         width: 5px;
+         height: 5px;
+         background: var(--accent);
+         transform: rotate(45deg);
+      }
+   }
+}
+
+.actions {
+   position: sticky;
+   bottom: 0;
+   z-index: 1;
+   margin: 40px -12px 0;
+   padding: 12px;
+   background: linear-gradient(to bottom, transparent, var(--bg) 40%);
+}
+
+.actions-inner {
+   display: flex;
+   align-items: center;
+   gap: 14px;
+   padding: 8px 8px 8px 16px;
+   background: var(--surface);
+   border: 1px solid var(--border-strong);
+   border-radius: var(--radius);
+}
+
+.summary {
+   flex: 1;
+   min-width: 0;
+   font: 12px / 1.4 var(--mono-family);
+   color: var(--muted);
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+#go {
+   flex-shrink: 0;
+   padding-inline: 22px;
+}
+
+@media (max-width: 560px) {
+   .summary {
+      font-size: 11.5px;
+      white-space: normal;
+   }
+}
+
+.foot {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: space-between;
+   gap: 6px 16px;
+   margin-top: 40px;
+   padding: 16px 0 40px;
+   border-top: 1px solid var(--border);
+   font-size: 13px;
+   color: var(--muted);
+
+   & a {
+      color: var(--muted);
+
+      &:hover {
+         color: var(--text);
+      }
+   }
 }
 </style>
 
 <script src="../scripts/patch.ts"></script>
+<script>
+import { byId } from '../lib/dom';
+
+const summary = byId('summary', HTMLParagraphElement);
+const version = byId('ver', HTMLSelectElement);
+const mode = byId('mode', HTMLSelectElement);
+const runtime = byId('runtime', HTMLInputElement);
+
+const update = () => {
+   const plugins = document.querySelectorAll('#jsp-bundled input:checked').length;
+   const extras = runtime.checked ? `${plugins} plugin${plugins === 1 ? '' : 's'}` : 'no plugins';
+   const install = mode.value === 'replace' ? 'replaces Discord' : 'next to Discord';
+   summary.textContent = `${version.value} / ${extras} / ${install}`;
+};
+
+document.addEventListener('change', update);
+document.addEventListener('click', update);
+update();
+</script>
