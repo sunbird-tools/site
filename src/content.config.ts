@@ -1,9 +1,10 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { defineCollection } from 'astro:content';
-import { file } from 'astro/loaders';
+import { file, type Loader } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-// sunbird's web/tools/bundle-plugins.mjs writes the list, scripts/fetch.nu puts it in public/.
+// sunbird's web/tools/bundle-plugins.ts writes the list, scripts/fetch.nu puts it in public/.
 const plugins = defineCollection({
    loader: file('public/plugins/index.json', {
       parser: (text) =>
@@ -20,13 +21,20 @@ const plugins = defineCollection({
 });
 
 const REPOSITORY = 'sunbird-tools/sunbird';
+const BRANCH = 'main';
+const CLONE = '.cache/sunbird.git';
+const PAGE = 100;
 
-const Contributor = z.object({
-   login: z.string(),
-   type: z.enum(['User', 'Bot']),
-   html_url: z.url(),
-   avatar_url: z.url(),
-   contributions: z.number(),
+const Commit = z.object({
+   sha: z.string(),
+   author: z
+      .object({
+         login: z.string(),
+         type: z.enum(['User', 'Bot']),
+         html_url: z.url(),
+         avatar_url: z.url(),
+      })
+      .nullable(),
 });
 
 const User = z.object({ name: z.string().nullable() });
@@ -56,57 +64,172 @@ async function github(path: string): Promise<unknown> {
    return response.json();
 }
 
+async function listCommits(): Promise<z.infer<typeof Commit>[]> {
+   const commits = [];
+   for (let page = 1; ; page++) {
+      const batch = z
+         .array(Commit)
+         .parse(
+            await github(`repos/${REPOSITORY}/commits?sha=${BRANCH}&per_page=${PAGE}&page=${page}`),
+         );
+      commits.push(...batch);
+      if (batch.length < PAGE) return commits;
+   }
+}
+
+function git(args: string[]): string {
+   return execFileSync('git', ['-c', 'log.showSignature=false', `--git-dir=${CLONE}`, ...args], {
+      encoding: 'utf8',
+      maxBuffer: 256 << 20,
+   });
+}
+
+interface Lines {
+   additions: number;
+   deletions: number;
+}
+
+interface Person extends Lines {
+   login: string;
+   url: string;
+   avatar: string;
+   commits: number;
+}
+
+/**
+ * Lines per commit from a bare clone. GitHub's stats endpoint counts vendored code like the
+ * QuickJS sources, so paths the repository's .gitattributes marks linguist-vendored or
+ * linguist-generated are left out, and renames count only their edits.
+ */
+function lineCounts(): Map<string, Lines> {
+   if (existsSync(CLONE)) {
+      git(['fetch', '--quiet', 'origin', `+refs/heads/${BRANCH}:refs/heads/${BRANCH}`]);
+   } else {
+      execFileSync('git', [
+         'clone',
+         '--quiet',
+         '--bare',
+         `https://github.com/${REPOSITORY}`,
+         CLONE,
+      ]);
+   }
+
+   const log = git([
+      `--attr-source=${BRANCH}`,
+      'log',
+      '--numstat',
+      '-M',
+      '--format=%x00%H',
+      BRANCH,
+      '--',
+      ':(attr:!linguist-vendored !linguist-generated)',
+   ]);
+   const counts = new Map<string, Lines>();
+   for (const record of log.split('\0').slice(1)) {
+      const [sha = '', ...files] = record.trim().split('\n');
+      const lines = { additions: 0, deletions: 0 };
+      for (const file of files) {
+         const [added, deleted] = file.split('\t');
+         if (added === '-' || added === undefined || deleted === undefined) continue;
+         lines.additions += Number(added);
+         lines.deletions += Number(deleted);
+      }
+      counts.set(sha, lines);
+   }
+   return counts;
+}
+
 const REFRESH_MS = 60 * 60 * 1000;
 
-const contributors = defineCollection({
-   loader: {
-      name: 'github-contributors',
-      // Astro keeps the store between dev restarts and builds, so local runs stay under the limit.
+interface Entry {
+   id: string;
+   data: Record<string, unknown>;
+}
+
+/** Astro keeps the store between dev restarts and builds, so local runs stay under the limit. */
+function hourly(name: string, fetchEntries: () => Promise<Entry[]>): Loader {
+   return {
+      name,
       load: async ({ store, meta, parseData, logger }) => {
          const fetched = Number(meta.get('fetched') ?? 0);
          const cached = store.keys().length > 0;
          if (cached && Date.now() - fetched < REFRESH_MS) return;
 
-         const response = await github(`repos/${REPOSITORY}/contributors`).catch(
-            (error: unknown) => {
-               if (!cached) throw error;
-               logger.warn(`keeping the cached contributors: ${error}`);
-               return null;
-            },
-         );
-         if (response === null) return;
+         let entries: Entry[];
+         try {
+            entries = await fetchEntries();
+         } catch (error) {
+            if (!cached) throw error;
+            logger.warn(`keeping the cached ${name}: ${error}`);
+            return;
+         }
 
-         const listed = z.array(Contributor).parse(response);
-         const people = listed.filter((contributor) => contributor.type === 'User');
-         const entries = await Promise.all(
-            people.map(async (contributor) => {
-               const user = User.parse(await github(`users/${contributor.login}`));
-               const data = {
-                  login: contributor.login,
-                  name: user.name ?? contributor.login,
-                  url: contributor.html_url,
-                  avatar: contributor.avatar_url,
-                  contributions: contributor.contributions,
-               };
-               return {
-                  id: contributor.login,
-                  data: await parseData({ id: contributor.login, data }),
-               };
-            }),
+         const parsed = await Promise.all(
+            entries.map(async (entry) => ({ id: entry.id, data: await parseData(entry) })),
          );
-
          store.clear();
-         for (const entry of entries) store.set(entry);
+         for (const entry of parsed) store.set(entry);
          meta.set('fetched', String(Date.now()));
       },
-   },
+   };
+}
+
+const contributors = defineCollection({
+   loader: hourly('github-contributors', async () => {
+      const lines = lineCounts();
+      const people = new Map<string, Person>();
+      for (const { sha, author } of await listCommits()) {
+         if (author?.type !== 'User') continue;
+
+         const person = people.get(author.login) ?? {
+            login: author.login,
+            url: author.html_url,
+            avatar: author.avatar_url,
+            commits: 0,
+            additions: 0,
+            deletions: 0,
+         };
+         person.commits += 1;
+         person.additions += lines.get(sha)?.additions ?? 0;
+         person.deletions += lines.get(sha)?.deletions ?? 0;
+         people.set(author.login, person);
+      }
+
+      return Promise.all(
+         [...people].map(async ([login, person]) => {
+            const user = User.parse(await github(`users/${login}`));
+            return { id: login, data: { ...person, name: user.name ?? login } };
+         }),
+      );
+   }),
    schema: z.object({
       login: z.string(),
       name: z.string(),
       url: z.url(),
       avatar: z.url(),
-      contributions: z.number(),
+      commits: z.number(),
+      additions: z.number(),
+      deletions: z.number(),
    }),
 });
 
-export const collections = { plugins, contributors };
+const Repository = z.object({ stargazers_count: z.number(), forks_count: z.number() });
+const Languages = z.record(z.string(), z.number());
+
+const repository = defineCollection({
+   loader: hourly('github-repository', async () => {
+      const [stats, languages] = await Promise.all([
+         github(`repos/${REPOSITORY}`).then((body) => Repository.parse(body)),
+         github(`repos/${REPOSITORY}/languages`).then((body) => Languages.parse(body)),
+      ]);
+      return [
+         {
+            id: 'sunbird',
+            data: { stars: stats.stargazers_count, forks: stats.forks_count, languages },
+         },
+      ];
+   }),
+   schema: z.object({ stars: z.number(), forks: z.number(), languages: Languages }),
+});
+
+export const collections = { plugins, contributors, repository };

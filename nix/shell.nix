@@ -1,6 +1,7 @@
 {
   mkShellNoCC,
   gh,
+  gitMinimal,
   nodejs,
   pnpm,
 }:
@@ -10,6 +11,7 @@ mkShellNoCC {
   strictDeps = true;
   nativeBuildInputs = [
     gh
+    gitMinimal
     nodejs
     pnpm
   ];

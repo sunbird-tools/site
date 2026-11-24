@@ -42,6 +42,11 @@ jobs:
           echo -n '${{ needs.check.outputs.release }}' > public/release.txt
         env:
           GH_TOKEN: ${{ github.token }}
+      - uses: actions/cache@v4
+        with:
+          path: .cache/data-store.json
+          key: astro-data-${{ github.run_id }}
+          restore-keys: astro-data-
       - run: |
           nix develop --command bash -euo pipefail -c '
             pnpm install --frozen-lockfile

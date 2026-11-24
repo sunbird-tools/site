@@ -1,50 +1,239 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
+
+const REPOSITORY = 'https://github.com/sunbird-tools/sunbird';
+const LANGUAGES_SHOWN = 5;
 
 const contributors = (await getCollection('contributors'))
-   .map(({ data }) => data)
-   .sort((left, right) => right.contributions - left.contributions);
+   .map(({ data }) => ({ ...data, changed: data.additions + data.deletions }))
+   .sort((left, right) => right.changed - left.changed || right.commits - left.commits);
+const repository = await getEntry('repository', 'sunbird');
+if (!repository) throw new Error('the repository loader stored no entry');
+
+const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+const commits = contributors.reduce((sum, person) => sum + person.commits, 0);
+const changed = contributors.reduce((sum, person) => sum + person.changed, 0);
+
+const counts = [
+   { label: 'Commits', value: commits, href: `${REPOSITORY}/commits` },
+   { label: 'Contributors', value: contributors.length, href: `${REPOSITORY}/graphs/contributors` },
+   { label: 'Stars', value: repository.data.stars, href: `${REPOSITORY}/stargazers` },
+   { label: 'Forks', value: repository.data.forks, href: `${REPOSITORY}/forks` },
+];
+
+const ranked = Object.entries(repository.data.languages).sort(
+   ([, left], [, right]) => right - left,
+);
+const bytes = ranked.reduce((sum, [, size]) => sum + size, 0);
+const rest = ranked.slice(LANGUAGES_SHOWN).reduce((sum, [, size]) => sum + size, 0);
+const languages = [
+   ...ranked.slice(0, LANGUAGES_SHOWN),
+   ...(rest > 0 ? [['Other', rest] as const] : []),
+].map(([name, size], rank) => ({
+   name,
+   percent: (size / bytes) * 100,
+   color: `color-mix(in oklab, var(--accent) ${100 - rank * 15}%, var(--border))`,
+}));
 ---
 
 <section class="group">
    <div class="group-head">
-      <h2>Contributors</h2>
+      <h2>Project</h2>
+   </div>
+   <div class="stats">
+      {counts.map(({ label, value, href }) => (
+            <a class="stat" href={href}>
+               <span class="value">{value.toLocaleString('en-US')}</span>
+               <span class="label">{label}</span>
+            </a>
+         ))}
+   </div>
+   <div class="languages">
+      <div class="bar">
+         {languages.map(({ name, percent, color }) => (
+               <span title={name} style={`flex-basis: ${percent}%; background: ${color}`}></span>
+            ))}
+      </div>
+      <ul class="legend">
+         {languages.map(({ name, percent, color }) => (
+               <li>
+                  <span class="dot" style={`background: ${color}`}></span>
+                  {name} <span class="percent">{percent.toFixed(1)}%</span>
+               </li>
+            ))}
+      </ul>
    </div>
    <div class="contributors">
-      {contributors.map(({ name, url, avatar }) => (
-            <a class="contributor" href={url}>
-               <img src={`${avatar}&s=48`} alt="" width="22" height="22" loading="lazy" />
-               <span>{name}</span>
+      {contributors.map((person) => (
+            <a class="contributor" href={person.url}>
+               <img src={`${person.avatar}&s=96`} alt="" width="44" height="44" loading="lazy" />
+               <span class="who">
+                  <span class="name">{person.name}</span>
+                  <span class="meta">
+                     <b>{person.commits}</b> {person.commits === 1 ? 'commit' : 'commits'}
+                  </span>
+                  <span class="meta">
+                     <span class="added">+{compact.format(person.additions)}</span>
+                     <span class="removed">−{compact.format(person.deletions)}</span>
+                  </span>
+               </span>
+               <span class="share" style={`--share: ${(person.changed / changed) * 100}%`}></span>
             </a>
          ))}
    </div>
 </section>
 
 <style>
-.contributors {
+.stats {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+   margin-bottom: 14px;
+   border: 1px solid var(--border);
+   border-radius: var(--radius);
+   background: var(--surface);
+   overflow: hidden;
+}
+
+.stat {
    display: flex;
-   flex-wrap: wrap;
-   gap: 8px 20px;
+   flex-direction: column;
+   gap: 2px;
+   padding: 14px 16px;
+   color: var(--text);
+   text-decoration: none;
+   box-shadow: -1px 0 0 var(--border);
+   transition: background-color 0.12s;
+
+   &:hover {
+      background: var(--hover);
+      text-decoration: none;
+   }
+}
+
+.value {
+   font: 700 22px / 1.2 var(--mono-family);
+   letter-spacing: -0.02em;
+}
+
+.label {
+   font-size: 12.5px;
+   color: var(--muted);
+}
+
+.contributors {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+   gap: 10px;
 }
 
 .contributor {
-   display: inline-flex;
+   position: relative;
+   display: flex;
    align-items: center;
-   gap: 8px;
-   padding: 4px 0;
-   font-size: 13.5px;
+   gap: 12px;
+   padding: 12px 14px 14px;
    color: var(--text);
    text-decoration: none;
+   background: var(--surface);
+   border: 1px solid var(--border);
+   border-radius: var(--radius);
+   overflow: hidden;
+   transition: border-color 0.12s;
 
    &:hover {
-      text-decoration: underline;
-      text-underline-offset: 3px;
+      border-color: var(--border-strong);
+      text-decoration: none;
    }
 }
 
 img {
    display: block;
-   border-radius: 50%;
+   flex: none;
+   border-radius: var(--radius);
    background: var(--border);
+}
+
+.who {
+   display: flex;
+   flex-direction: column;
+   min-width: 0;
+   flex: 1;
+}
+
+.name {
+   font-size: 14px;
+   font-weight: 700;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.meta {
+   display: flex;
+   gap: 8px;
+   font: var(--mono);
+   color: var(--muted);
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+
+   & b {
+      color: var(--text);
+   }
+}
+
+.share {
+   position: absolute;
+   inset: auto 0 0;
+   height: 2px;
+   background: linear-gradient(to right, var(--accent) var(--share), transparent var(--share));
+}
+
+.added {
+   color: var(--ok);
+}
+
+.removed {
+   color: var(--err);
+}
+
+.languages {
+   margin-bottom: 14px;
+}
+
+.bar {
+   display: flex;
+   gap: 2px;
+   height: 6px;
+   border-radius: var(--radius);
+   overflow: hidden;
+}
+
+.legend {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px 18px;
+   margin: 10px 0 0;
+   padding: 0;
+   list-style: none;
+   font-size: 12.5px;
+   color: var(--text);
+}
+
+.legend li {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.dot {
+   width: 8px;
+   height: 8px;
+   border-radius: 2px;
+}
+
+.percent {
+   font: var(--mono);
+   color: var(--muted);
 }
 </style>
