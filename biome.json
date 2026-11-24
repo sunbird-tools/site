@@ -1,7 +1,15 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
   "files": {
-    "includes": ["**", "!!**/dist", "!!**/.astro", "!!**/*.svg", "!!src/pkg", "!!public"]
+    "includes": [
+      "**",
+      "!!**/dist",
+      "!!**/.astro",
+      "!!.cache",
+      "!!**/*.svg",
+      "!!src/pkg",
+      "!!public"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -10,7 +18,15 @@
   },
   "linter": {
     "enabled": true,
-    "includes": ["**", "!!**/dist", "!!**/.astro", "!!**/*.svg", "!!src/pkg", "!!public"],
+    "includes": [
+      "**",
+      "!!**/dist",
+      "!!**/.astro",
+      "!!.cache",
+      "!!**/*.svg",
+      "!!src/pkg",
+      "!!public"
+    ],
     "rules": {
       "preset": "recommended"
     }
