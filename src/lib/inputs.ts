@@ -1,4 +1,4 @@
-import { DENSITIES, FRIDA, PACKAGE, type Density } from './discord';
+import { ABIS, DENSITIES, FRIDA, PACKAGE, type Abi, type Density } from './discord';
 import { byId } from './dom';
 import { fetchOk } from './download';
 import { Step, log, megabytes } from './progress';
@@ -6,6 +6,7 @@ import type { Frida, FridaScript, PluginSource } from './protocol';
 
 export interface Splits {
    code: number;
+   abi: Abi;
    density: Density;
    language: string | null;
 }
@@ -14,9 +15,13 @@ export function readSplits(): Splits {
    const name = byId('dpi', HTMLSelectElement).value;
    const density = DENSITIES.find((candidate) => candidate.name === name);
    if (!density) throw new Error(`unknown density ${name}`);
+   const abiName = byId('abi', HTMLSelectElement).value;
+   const abi = ABIS.find((candidate) => candidate.name === abiName);
+   if (!abi) throw new Error(`unknown architecture ${abiName}`);
    const language = byId('lang', HTMLSelectElement).value;
    return {
       code: Number(byId('ver', HTMLSelectElement).value),
+      abi,
       density,
       language: language === 'none' ? null : `config.${language}`,
    };

@@ -1,5 +1,5 @@
 ---
-import { DENSITIES, LANGUAGES, VERIFIED } from '../lib/discord';
+import { ABIS, DENSITIES, LANGUAGES, VERIFIED } from '../lib/discord';
 
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
 const languageOptions = LANGUAGES.map((code) => ({
@@ -25,6 +25,12 @@ const languageOptions = LANGUAGES.map((code) => ({
             <select id="mode">
                <option value="replace" selected>Replace Discord</option>
                <option value="side">Alongside Discord</option>
+            </select>
+         </div>
+         <div class="field">
+            <label for="abi">Architecture</label>
+            <select id="abi">
+               {ABIS.map(({ name }) => <option value={name}>{name}</option>)}
             </select>
          </div>
          <div class="field">

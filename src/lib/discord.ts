@@ -47,14 +47,27 @@ export const LANGUAGES = [
    'zh',
 ] as const;
 
-/** arm64 is the only ABI with a loader build (sunbird's scripts/site.nu). The loader goes in first, under its name in the APK. */
-export const ABI = {
-   split: 'config.arm64_v8a',
-   libraries: {
-      'libplm.so': '/plugins/libphoenix-arm64.so',
-      'libshadowhook_nothing.so': '/plugins/libshadowhook_nothing-arm64.so',
+/** The ABIs with a loader build (sunbird's scripts/site.nu). The loader goes in first, under its name in the APK. */
+export const ABIS = [
+   {
+      name: 'arm64',
+      split: 'config.arm64_v8a',
+      libraries: {
+         'libplm.so': '/plugins/libphoenix-arm64.so',
+         'libshadowhook_nothing.so': '/plugins/libshadowhook_nothing-arm64.so',
+      },
    },
-} as const;
+   {
+      name: 'armv7',
+      split: 'config.armeabi_v7a',
+      libraries: {
+         'libplm.so': '/plugins/libphoenix-armv7.so',
+         'libshadowhook_nothing.so': '/plugins/libshadowhook_nothing-armv7.so',
+      },
+   },
+] as const;
+
+export type Abi = (typeof ABIS)[number];
 
 export const FRIDA = {
    gadget: '/plugins/frida-gadget-17.27.4-android-arm64.so.gz',

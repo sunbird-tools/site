@@ -1,4 +1,4 @@
-import { ABI, PACKAGE, SIDE_LABEL } from '../lib/discord';
+import { PACKAGE, SIDE_LABEL, type Abi } from '../lib/discord';
 import { byId } from '../lib/dom';
 import {
    PROXY,
@@ -58,7 +58,7 @@ function patch(request: PatchRequest): Promise<Blob> {
    });
 }
 
-async function patchAndOffer(code: number, apks: Uint8Array[]) {
+async function patchAndOffer(code: number, abi: Abi, apks: Uint8Array[]) {
    const plugins = await readPlugins();
    const frida = await readFrida();
    const step = new Step('Patch and sign');
@@ -68,7 +68,7 @@ async function patchAndOffer(code: number, apks: Uint8Array[]) {
    const side = packageName !== PACKAGE;
    const libraries: Library[] = plugins
       ? await Promise.all(
-           Object.entries(ABI.libraries).map(async ([name, url]) => ({
+           Object.entries(abi.libraries).map(async ([name, url]) => ({
               name,
               bytes: await fetchBytes(url),
            })),
@@ -105,9 +105,12 @@ function fail(error: unknown) {
 
 /** The user downloads the splits, and the patcher tells them apart by content. */
 function showManual(splits: Splits) {
-   const names = ['base', ABI.split, `config.${splits.density.name}`, splits.language].filter(
-      (name) => name !== null,
-   );
+   const names = [
+      'base',
+      splits.abi.split,
+      `config.${splits.density.name}`,
+      splits.language,
+   ].filter((name) => name !== null);
 
    byId('links', HTMLUListElement).replaceChildren(
       ...names.map((name) => {
@@ -132,6 +135,7 @@ function showManual(splits: Splits) {
          const files = [...((target as HTMLInputElement).files ?? [])];
          await patchAndOffer(
             splits.code,
+            splits.abi,
             await Promise.all(files.map(async (file) => new Uint8Array(await file.arrayBuffer()))),
          );
          setBusy(false);
@@ -159,10 +163,15 @@ go.onclick = async () => {
 
    try {
       const base = await download(splits.code, 'base');
-      const abi = await download(splits.code, ABI.split);
+      const abi = await download(splits.code, splits.abi.split);
       const density = await downloadDensity(splits.code, splits.density);
       const language = splits.language ? await tryDownload(splits.code, splits.language) : null;
-      await patchAndOffer(splits.code, [base, abi, density, ...(language ? [language] : [])]);
+      await patchAndOffer(splits.code, splits.abi, [
+         base,
+         abi,
+         density,
+         ...(language ? [language] : []),
+      ]);
       setBusy(false);
    } catch (error) {
       // fetch throws TypeError when CORS or the network blocks the proxy.
