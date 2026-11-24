@@ -21,7 +21,8 @@ const defaultSelected = plugins.filter(({ data }) => data.name !== 'example').le
          <span>
             <span class="row-title">Plugin runtime</span>
             <span class="row-desc">
-               Manage plugins in Discord under Settings → Phoenix. Turn off for access patches only.
+               Adds Settings → Phoenix in Discord to manage plugins. Turn off to only unlock the
+               client.
             </span>
          </span>
       </label>
@@ -30,8 +31,7 @@ const defaultSelected = plugins.filter(({ data }) => data.name !== 'example').le
          <div class="plugin-grid" id="jsp-bundled">
             {plugins.map(({ data: plugin }) => (
                   <label class="plugin-item">
-                     {/* example is a demo of the API, so it is opt-in */}
-                     <input type="checkbox" value={plugin.name} checked={plugin.name !== 'example'} />
+                     <input type="checkbox" value={plugin.name} checked />
                      <span class="plugin-copy">
                         <span class="plugin-name">{plugin.name}</span>
                         <span class="plugin-desc">{plugin.description}</span>
@@ -48,8 +48,8 @@ const defaultSelected = plugins.filter(({ data }) => data.name !== 'example').le
             </summary>
             <div class="extra-body">
                <p class="note">
-                  Add <code>.js</code> files or write a script using the global{' '}
-                  <code>phoenix</code>{' '}API (
+                  Load <code>.js</code> files or paste a script using the{' '}
+                  <code>phoenix</code>{' '}global (
                   <a
                      href="https://github.com/sunbird-tools/sunbird/blob/main/crates/runtime/phoenix.d.ts"
                      >phoenix.d.ts</a
@@ -83,15 +83,15 @@ const defaultSelected = plugins.filter(({ data }) => data.name !== 'example').le
                <span>
                   <span class="row-title">Embed frida-gadget</span>
                   <span class="row-desc">
-                     Runs Frida 17 scripts at startup and adds a floating JS console for debugging.
+                     Runs Frida 17 scripts on startup with a floating JS console.
                   </span>
                </span>
             </label>
 
             <div class="frida-panel" id="frida" hidden>
                <p class="note">
-                  Plain scripts without imports (<code>Java</code>{' '}is available). Installed on
-                  first launch and manageable from the floating{' '}<b>JS</b>{' '}button.
+                  No ES imports; <code>Java</code>{' '}is available globally. Scripts install on
+                  first launch and can be toggled from the floating{' '}<b>JS</b>{' '}button.
                </p>
                <label class="file-picker">
                   <input type="file" id="frida-files" multiple accept=".js,text/javascript">

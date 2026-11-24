@@ -5,29 +5,57 @@ import Plugins from '../components/Plugins.astro';
 import Progress from '../components/Progress.astro';
 import Result from '../components/Result.astro';
 import Setup from '../components/Setup.astro';
+import Topbar from '../components/Topbar.astro';
 import Base from '../layouts/Base.astro';
 ---
 
-<Base
-   title="Phoenix Unlock"
-   description="Patch Discord's native Android client in your browser with plugins built in."
->
-   <nav class="top">
-      <span class="wordmark"><span class="dot" aria-hidden="true"></span>sunbird</span>
-      <a href="https://github.com/sunbird-tools/sunbird">Source ↗</a>
-   </nav>
+<Base title="Sunbird" description="Patch Discord's native Android client in your browser.">
+   <Topbar />
 
    <header class="head">
-      <h1>Phoenix Unlock</h1>
-      <p class="lede">
-         Patch Discord's native Android client with plugins built in. The APK is built in this
-         browser and never leaves your device.
-      </p>
-      <ul class="facts">
-         <li>Client-side</li>
-         <li>arm64</li>
-         <li>Signed v3</li>
-         <li>Updates in place</li>
+      <h1>Sunbird</h1>
+      <p class="lede">Unlock Discord's native Android client <em>and</em> bundle plugins!</p>
+      <ul class="arch" aria-label="Architecture support">
+         <li class="ready" title="Supported">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+               <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.3" />
+               <path
+                  d="M3.75 6.15 5.3 7.7 8.4 4.5"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+               />
+            </svg>
+            <span>arm64</span>
+         </li>
+         <li class="wip" title="In progress">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+               <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.3" opacity="0.3" />
+               <path
+                  d="M6 1a5 5 0 1 1-5 5"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+               />
+            </svg>
+            <span>armv7</span>
+         </li>
+         {(['x86', 'x86_64'] as const).map((abi) => (
+            <li class="planned" title="Planned">
+               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <circle
+                     cx="6"
+                     cy="6"
+                     r="5"
+                     stroke="currentColor"
+                     stroke-width="1.3"
+                     stroke-dasharray="2.4 2.4"
+                  />
+               </svg>
+               <span>{abi}</span>
+            </li>
+         ))}
       </ul>
    </header>
 
@@ -37,7 +65,7 @@ import Base from '../layouts/Base.astro';
    <div class="actions">
       <div class="actions-inner">
          <p class="summary" id="summary"></p>
-         <button type="button" id="go">Patch Discord →</button>
+         <button type="button" id="go">Patch Discord</button>
       </div>
       <p class="err" id="err" hidden></p>
    </div>
@@ -54,38 +82,6 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <style>
-.top {
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   font-size: 14px;
-
-   & a {
-      color: var(--muted);
-      text-decoration: none;
-
-      &:hover {
-         color: var(--text);
-      }
-   }
-}
-
-.wordmark {
-   display: flex;
-   align-items: center;
-   gap: 10px;
-   font-size: 16px;
-   font-weight: 800;
-   letter-spacing: -0.03em;
-}
-
-.dot {
-   width: 10px;
-   height: 10px;
-   background: var(--accent);
-   transform: rotate(45deg);
-}
-
 .head {
    padding: 56px 0 8px;
 }
@@ -97,28 +93,50 @@ import Base from '../layouts/Base.astro';
    color: var(--muted);
 }
 
-.facts {
+.arch {
    display: flex;
    flex-wrap: wrap;
-   gap: 6px 18px;
-   margin: 22px 0 0;
+   gap: 8px;
+   margin: 20px 0 0;
    padding: 0;
-   font-size: 13px;
-   font-weight: 600;
-   color: var(--text);
    list-style: none;
+   font: 500 12px / 1 var(--mono-family);
 
    & li {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: var(--radius);
+   }
 
-      &::before {
-         content: "";
-         width: 5px;
-         height: 5px;
-         background: var(--accent);
-         transform: rotate(45deg);
+   & .ready {
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+
+      & svg {
+         color: var(--ok);
+      }
+   }
+
+   & .wip {
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+
+      & svg {
+         color: var(--warn);
+      }
+   }
+
+   & .planned {
+      color: var(--muted);
+      border: 1px dashed var(--border);
+
+      & svg {
+         color: var(--muted);
+         opacity: 0.7;
       }
    }
 }
@@ -145,11 +163,21 @@ import Base from '../layouts/Base.astro';
 .summary {
    flex: 1;
    min-width: 0;
-   font: 12px / 1.4 var(--mono-family);
+   font: 12.5px / 1.4 var(--mono-family);
    color: var(--muted);
    overflow: hidden;
    text-overflow: ellipsis;
    white-space: nowrap;
+
+   & :global(b) {
+      font-weight: 600;
+      color: var(--text);
+   }
+
+   & :global(.dot-sep) {
+      margin-inline: 6px;
+      color: var(--border-strong);
+   }
 }
 
 #go {
@@ -187,21 +215,50 @@ import Base from '../layouts/Base.astro';
 
 <script src="../scripts/patch.ts"></script>
 <script>
+import { PACKAGE } from '../lib/discord';
 import { byId } from '../lib/dom';
 
 const summary = byId('summary', HTMLParagraphElement);
 const version = byId('ver', HTMLSelectElement);
 const mode = byId('mode', HTMLSelectElement);
+const pkg = byId('pkg', HTMLInputElement);
 const runtime = byId('runtime', HTMLInputElement);
+const fridaOn = byId('frida-on', HTMLInputElement);
+const customFiles = byId('jsp-files', HTMLInputElement);
+const customCode = byId('jsp-code', HTMLTextAreaElement);
+
+const part = (text: string, strong = false) => {
+   const el = document.createElement(strong ? 'b' : 'span');
+   el.textContent = text;
+   return el;
+};
+
+const sep = () => {
+   const el = document.createElement('span');
+   el.className = 'dot-sep';
+   el.textContent = '·';
+   return el;
+};
 
 const update = () => {
-   const plugins = document.querySelectorAll('#jsp-bundled input:checked').length;
-   const extras = runtime.checked ? `${plugins} plugin${plugins === 1 ? '' : 's'}` : 'no plugins';
-   const install = mode.value === 'replace' ? 'replaces Discord' : 'next to Discord';
-   summary.textContent = `${version.value} / ${extras} / ${install}`;
+   const bundled = document.querySelectorAll('#jsp-bundled input:checked').length;
+   const custom = (customFiles.files?.length ?? 0) + (customCode.value.trim() ? 1 : 0);
+   const total = bundled + custom;
+   const base = runtime.checked ? `${total} plugin${total === 1 ? '' : 's'}` : 'unlock only';
+   const extras = fridaOn.checked ? `${base} + Frida` : base;
+   const target = mode.value === 'replace' ? PACKAGE : pkg.value.trim() || 'com.discord.phoenix';
+
+   summary.replaceChildren(
+      part(`Build ${version.value}`, true),
+      sep(),
+      part(extras, true),
+      sep(),
+      part(target),
+   );
 };
 
 document.addEventListener('change', update);
 document.addEventListener('click', update);
+document.addEventListener('input', update);
 update();
 </script>

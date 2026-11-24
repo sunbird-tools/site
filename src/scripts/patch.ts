@@ -25,7 +25,7 @@ let apkUrl: string | null = null;
 
 function setBusy(busy: boolean) {
    go.disabled = busy;
-   go.textContent = busy ? 'Patching…' : 'Patch Discord →';
+   go.textContent = busy ? 'Patching…' : 'Patch Discord';
 }
 
 function patch(request: PatchRequest): Promise<Blob> {
@@ -91,7 +91,7 @@ async function patchAndOffer(code: number, apks: Uint8Array[]) {
    if (apkUrl) URL.revokeObjectURL(apkUrl);
    apkUrl = URL.createObjectURL(apk);
    link.href = apkUrl;
-   link.download = `discord-${code}-phoenix-unlock${side ? '-side' : ''}.apk`;
+   link.download = `discord-${code}-sunbird${side ? '-side' : ''}.apk`;
    byId('result', HTMLElement).hidden = false;
    link.scrollIntoView({ behavior: 'smooth' });
 }
