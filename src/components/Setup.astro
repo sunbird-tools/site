@@ -1,0 +1,96 @@
+---
+import { DENSITIES, LANGUAGES, VERIFIED } from '../lib/discord';
+---
+
+<section class="card">
+   <div class="row">
+      <label for="ver">Discord build</label>
+      <select id="ver">
+         {VERIFIED.map((code) => <option value={code}>{code} (verified)</option>)}
+      </select>
+   </div>
+   <div class="row">
+      <label for="dpi">Screen density</label>
+      <select id="dpi">
+         {DENSITIES.map(({ name, dpi }) => <option value={name}>{name} ({dpi})</option>)}
+      </select>
+   </div>
+   <div class="row">
+      <label for="lang">Language</label>
+      <select id="lang">
+         <option value="none">none</option>
+         {LANGUAGES.map((language) => <option value={language} selected={language === 'en'}>{language}</option>)}
+      </select>
+   </div>
+   <div class="row">
+      <label for="mode">Install</label>
+      <select id="mode">
+         <option value="replace" selected>Replace Discord</option>
+         <option value="side">Next to Discord</option>
+      </select>
+   </div>
+   <div class="row" id="pkg-row" hidden>
+      <label for="pkg">Package name</label>
+      <input
+         type="text"
+         id="pkg"
+         value="com.discord.phoenix"
+         spellcheck="false"
+         autocapitalize="off"
+         autocomplete="off"
+      >
+   </div>
+</section>
+
+<style>
+.row {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   gap: 12px;
+   padding: 8px 0;
+
+   & + & {
+      border-top: 1px solid var(--line);
+   }
+}
+
+label {
+   color: var(--muted);
+}
+</style>
+
+<script>
+import { DENSITIES, LANGUAGES, TRACKER, VERIFIED } from '../lib/discord';
+import { byId } from '../lib/dom';
+import { checkPackage } from '../lib/inputs';
+
+const screen = Math.round((window.devicePixelRatio || 1) * 160);
+const density = DENSITIES.find(({ dpi }) => dpi >= screen) ?? DENSITIES.at(-1);
+if (density) byId('dpi', HTMLSelectElement).value = density.name;
+
+const language = (navigator.language || 'en').slice(0, 2).toLowerCase();
+if (LANGUAGES.some((known) => known === language)) byId('lang', HTMLSelectElement).value = language;
+
+const mode = byId('mode', HTMLSelectElement);
+mode.onchange = () => {
+   byId('pkg-row', HTMLDivElement).hidden = mode.value === 'replace';
+   checkPackage();
+};
+byId('pkg', HTMLInputElement).oninput = checkPackage;
+
+interface TrackerIndex {
+   latest?: { alpha?: number };
+}
+
+fetch(`${TRACKER}/tracker/index`)
+   .then((response) => response.json() as Promise<TrackerIndex>)
+   .then(({ latest }) => {
+      const alpha = latest?.alpha;
+      if (!alpha || VERIFIED.includes(alpha)) return;
+      const versions = byId('ver', HTMLSelectElement);
+      const older = [...versions.options].find((option) => Number(option.value) < alpha) ?? null;
+      versions.add(new Option(`${alpha} (latest alpha, untested)`, String(alpha)), older);
+   })
+   .catch(() => {});
+</script>

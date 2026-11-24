@@ -1,0 +1,138 @@
+---
+import { getCollection } from 'astro:content';
+
+const plugins = await getCollection('plugins');
+---
+
+<h2>Plugins</h2>
+<section class="card">
+   <label class="plugin">
+      <input type="checkbox" id="runtime" checked>
+      <b>Plugin runtime</b>
+      <span>
+         Phoenix Unlock's plugin runtime, with native hooks through ShadowHook. Pick ready-made
+         plugins and/or add your own below; manage them in Discord Settings → Phoenix. Off: only the
+         access patches.
+      </span>
+   </label>
+   <label class="plugin">
+      <input type="checkbox" id="frida-on">
+      <b>Frida gadget (advanced)</b>
+      <span>
+         Embeds frida-gadget (+40 MB) for Frida scripts and debugging: a floating JS panel, a
+         console and an optional debug shell. Not needed for the plugins above.
+      </span>
+   </label>
+</section>
+
+<section class="card" id="jsp">
+   <p class="note"><b>Include</b></p>
+   <div id="jsp-bundled">
+      {plugins.map(({ data: plugin }) => (
+            <label class="plugin">
+               {/* example is a demo of the API, so it is opt-in */}
+               <input type="checkbox" value={plugin.name} checked={plugin.name !== 'example'} />
+               <b>{plugin.name}</b>
+               <span>{plugin.description}</span>
+               {plugin.warning && <small class="warn">⚠ {plugin.warning}</small>}
+            </label>
+         ))}
+   </div>
+   <p class="note">
+      <b>Your plugins</b>
+      run next to the ones above (the global <code>phoenix</code> API, plain scripts; types in
+      <a href="https://github.com/sunbird-tools/sunbird/blob/main/crates/runtime/phoenix.d.ts"
+         >phoenix.d.ts</a
+      >). Leading
+      <code>// @description</code>, <code>// @version</code> and
+      <code>// @author</code>
+      lines describe it in Discord Settings → Phoenix; a file is named after itself. Optional: pick
+      .js files and/or write one below.
+   </p>
+   <input type="file" id="jsp-files" multiple accept=".js,text/javascript">
+   <textarea
+      id="jsp-code"
+      rows="8"
+      spellcheck="false"
+      aria-label="Your plugin"
+      placeholder={`// @description Logs incoming messages (adb logcat -s phoenix)\nphoenix.on(phoenix.gateway.messageCreate, (m) => phoenix.log.info(m.author?.username, ':', m.content));`}
+   ></textarea>
+</section>
+
+<section class="card" id="frida" hidden>
+   <p class="note">
+      <b>Frida scripts</b>
+      run inside Discord when it starts (Frida 17 API with <code>Java</code>, plain scripts without
+      imports). The ones you pick here are installed on first start; in the app, the floating
+      <b>JS</b>
+      button opens a panel to turn plugins on and off, add more from a URL, reload them, and see
+      their console.
+   </p>
+   <input type="file" id="frida-files" multiple accept=".js,text/javascript">
+   <textarea id="frida-code" rows="10" spellcheck="false" aria-label="Frida script"></textarea>
+</section>
+
+<style>
+.plugin {
+   display: grid;
+   grid-template-columns: auto 1fr;
+   gap: 2px 12px;
+   align-items: start;
+   padding: 10px 0;
+   border-bottom: 1px solid var(--line);
+   cursor: pointer;
+
+   &:last-child {
+      border-bottom: 0;
+   }
+
+   & input {
+      grid-row: 1 / 3;
+      width: 20px;
+      height: 20px;
+      margin: 2px 0 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+   }
+
+   & b {
+      font-weight: 600;
+   }
+
+   & span {
+      font-size: 14px;
+      color: var(--muted);
+   }
+}
+
+.warn {
+   grid-column: 2;
+   margin-top: 2px;
+   font-size: 13px;
+   color: var(--warn);
+}
+</style>
+
+<script>
+import { FRIDA } from '../lib/discord';
+import { byId } from '../lib/dom';
+
+// Browsers may restore a checkbox on reload, so the sections follow its current state.
+const toggle = (box: string, section: string) => {
+   const input = byId(box, HTMLInputElement);
+   const sync = () => (byId(section, HTMLElement).hidden = !input.checked);
+   input.onchange = sync;
+   sync();
+};
+
+toggle('runtime', 'jsp');
+toggle('frida-on', 'frida');
+
+fetch(FRIDA.example)
+   .then((response) => (response.ok ? response.text() : ''))
+   .then((example) => {
+      const editor = byId('frida-code', HTMLTextAreaElement);
+      if (!editor.value) editor.value = example;
+   })
+   .catch(() => {});
+</script>

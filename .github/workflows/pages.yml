@@ -1,0 +1,66 @@
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # sunbird-tools/sunbird republishes its `site` release on every push to main. Polling it needs
+  # no token, and the check job skips the build while the deployed release is current.
+  schedule:
+    - cron: '*/10 * * * *'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.release.outputs.release }}
+      stale: ${{ steps.release.outputs.stale }}
+    steps:
+      - id: release
+        run: |
+          release=$(gh api repos/sunbird-tools/sunbird/releases/tags/site --jq '.assets[] | select(.name == "site.tar.gz") | .updated_at')
+          deployed=$(curl -fsS https://sunbird.tools/release.txt || true)
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          echo "stale=$([ "$release" != "$deployed" ] || [ "${{ github.event_name }}" != schedule ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+  build:
+    needs: check
+    if: needs.check.outputs.stale == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+      - run: |
+          mkdir -p staging public && gh release download site -R sunbird-tools/sunbird -p site.tar.gz -O - | tar xz -C staging
+          mv staging/pkg src/pkg && mv staging/plugins staging/version.json public/
+          echo -n '${{ needs.check.outputs.release }}' > public/release.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: |
+          nix develop --command bash -euo pipefail -c '
+            pnpm install --frozen-lockfile
+            pnpm lint
+            pnpm format:check
+            pnpm check
+            pnpm build
+          '
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5

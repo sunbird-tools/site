@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+
+const contributors = (await getCollection('contributors'))
+   .map(({ data }) => data)
+   .sort((left, right) => right.contributions - left.contributions);
+---
+
+<h2>Contributors</h2>
+<section class="card">
+   {contributors.map(({ name, url, avatar }) => (
+         <a href={url}>
+            <img src={`${avatar}&s=96`} alt="" width="48" height="48" loading="lazy" />
+            {name}
+         </a>
+      ))}
+</section>
+
+<style>
+section {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 12px 24px;
+}
+
+a {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   font-weight: 600;
+   text-decoration: none;
+   color: var(--fg);
+
+   &:hover {
+      color: var(--accent);
+   }
+}
+
+img {
+   border-radius: 50%;
+   background: var(--line);
+}
+</style>

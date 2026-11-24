@@ -1,0 +1,46 @@
+---
+import Contributors from '../components/Contributors.astro';
+import Manual from '../components/Manual.astro';
+import Plugins from '../components/Plugins.astro';
+import Progress from '../components/Progress.astro';
+import Result from '../components/Result.astro';
+import Setup from '../components/Setup.astro';
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+   title="Phoenix Unlock"
+   description="Patch Discord's Phoenix client in your browser: no access gate, plugins built in."
+>
+   <h1>Phoenix Unlock</h1>
+   <p class="lede">
+      Patches Discord's new native client (Phoenix) so it opens without the access gate, with
+      Phoenix Unlock's plugin runtime and the plugins you pick built in. It all runs in this
+      browser; nothing is uploaded.
+   </p>
+
+   <Setup />
+   <Plugins />
+
+   <button type="button" id="go">Patch Discord</button>
+   <p class="err" id="err" hidden></p>
+
+   <Progress />
+   <Manual />
+   <Result />
+   <Contributors />
+
+   <p class="note">
+      Unofficial and not affiliated with Discord. Source:
+      <a href="https://github.com/sunbird-tools/sunbird">github.com/sunbird-tools/sunbird</a>
+   </p>
+</Base>
+
+<style>
+.lede {
+   margin: 0 0 20px;
+   color: var(--muted);
+}
+</style>
+
+<script src="../scripts/patch.ts"></script>
