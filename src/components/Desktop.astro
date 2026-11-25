@@ -1,0 +1,81 @@
+---
+const ASSETS = 'https://assets.sunbird.tools/plugins';
+---
+
+<section class="group">
+   <div class="group-head">
+      <h2>Desktop</h2>
+   </div>
+   <div class="box desktop">
+      <p class="note">
+         <b>Install Discord Phoenix first.</b>{' '}Sunbird starts it with the runtime loaded and
+         updates itself on every launch. Discord's own files are never changed, so Discord updates
+         don't undo it.
+      </p>
+
+      <div class="os">
+         <h3>Windows</h3>
+         <a
+            class="button dl"
+            href={`${ASSETS}/sunbird-windows-x86_64.exe`}
+            download="SunbirdSetup.exe"
+         >
+            Download for Windows
+         </a>
+         <p class="note">
+            Run it once. It installs to <code>%LOCALAPPDATA%\Sunbird</code> and adds a Sunbird
+            shortcut to the Start Menu and Desktop. Uninstall with{' '}
+            <code>sunbird.exe --uninstall</code>{' '}in that folder.
+         </p>
+      </div>
+
+      <div class="os">
+         <h3>Linux</h3>
+         <pre>curl -fsSL {ASSETS}/sunbird-linux.sh | sh</pre>
+         <p class="note">
+            It finds <code>discord-phoenix</code> on your <code>PATH</code> or a{' '}
+            <code>discord-desktop*.AppImage</code>{' '}in <code>~/Applications</code> or{' '}
+            <code>~/Downloads</code>. To use another AppImage, end the command with{' '}
+            <code>sh -s -- /path/to/AppImage</code>. It adds a Sunbird entry to your app menu. To
+            uninstall, end it with <code>sh -s -- --uninstall</code>.
+         </p>
+      </div>
+   </div>
+</section>
+
+<style>
+.desktop {
+   display: grid;
+   gap: 16px;
+   padding: 16px;
+}
+
+.os {
+   display: grid;
+   gap: 10px;
+   padding-top: 16px;
+   border-top: 1px solid var(--border);
+}
+
+h3 {
+   margin: 0;
+   font-size: 14px;
+   font-weight: 650;
+}
+
+.dl {
+   width: 100%;
+}
+
+pre {
+   margin: 0;
+   padding: 10px 12px;
+   overflow-x: auto;
+   font: var(--mono);
+   color: var(--text);
+   background: var(--bg);
+   border: 1px solid var(--border);
+   border-radius: var(--radius);
+   user-select: all;
+}
+</style>
