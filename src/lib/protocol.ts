@@ -19,6 +19,14 @@ export interface Frida {
    scripts: FridaScript[];
 }
 
+export interface IpaRequest {
+   ipa: Uint8Array;
+   loader: Uint8Array;
+   plugins: PluginSource[];
+}
+
+export type IpaReply = { kind: 'ipa'; ipa: Blob } | { kind: 'error'; message: string };
+
 /** `plugins` is null with the runtime off, which leaves only the access patches. */
 export interface PatchRequest {
    apks: Uint8Array[];

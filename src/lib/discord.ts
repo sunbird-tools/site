@@ -75,5 +75,8 @@ export const FRIDA = {
    example: '/plugins/frida-example.js',
 } as const;
 
+/** The iOS loader the IPA patcher adds, built by sunbird's ios workflow. */
+export const IOS_LOADER = '/plugins/libphoenix-ios.dylib';
+
 export const PACKAGE = 'com.discord';
 export const SIDE_LABEL = 'Discord Phoenix';

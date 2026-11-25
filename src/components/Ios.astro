@@ -1,0 +1,58 @@
+<section class="group">
+   <div class="group-head">
+      <h2>iPhone</h2>
+   </div>
+   <div class="box ios">
+      <p class="note">
+         Bring your own decrypted Discord 357.0 IPA. The site patches it in your browser with the
+         plugins picked above and never downloads Discord for you.
+      </p>
+      <label class="file-picker">
+         <input type="file" id="ipa-file" accept=".ipa,application/octet-stream">
+         <span class="file-btn">Select IPA</span>
+         <span class="file-label" id="ipa-label">No IPA selected</span>
+      </label>
+      <button type="button" id="ipa-go" disabled>Patch IPA</button>
+      <p class="err" id="ipa-err" hidden></p>
+      <div id="ipa-result" hidden>
+         <!-- biome-ignore lint/a11y/useValidAnchor: ipa.ts sets href to the IPA's object URL -->
+         <a class="button dl" id="ipa-dl" download>Download patched IPA</a>
+         <ol class="steps-list">
+            <li>
+               Sideload it with a tool that signs it for your device, like AltStore or Sideloadly.
+            </li>
+            <li>Open Discord, switch it to the new native client, then relaunch it.</li>
+         </ol>
+      </div>
+   </div>
+</section>
+
+<style>
+.ios {
+   display: grid;
+   gap: 12px;
+   padding: 16px;
+}
+
+.note {
+   font-size: 13.5px;
+   color: var(--muted);
+}
+
+.dl {
+   width: 100%;
+}
+
+.steps-list {
+   margin: 14px 0 0;
+   padding-left: 18px;
+   font-size: 13.5px;
+   color: var(--muted);
+
+   & li {
+      padding: 2px 0;
+   }
+}
+</style>
+
+<script src="../scripts/ipa.ts"></script>

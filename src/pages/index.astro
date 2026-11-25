@@ -1,5 +1,6 @@
 ---
 import Contributors from '../components/Contributors.astro';
+import Ios from '../components/Ios.astro';
 import Manual from '../components/Manual.astro';
 import Platforms from '../components/Platforms.astro';
 import Plugins from '../components/Plugins.astro';
@@ -10,7 +11,7 @@ import Topbar from '../components/Topbar.astro';
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title="Sunbird" description="Patch Discord's native Android client in your browser.">
+<Base title="Sunbird" description="Patch Discord's native clients in your browser.">
    <Topbar />
 
    <header class="head">
@@ -33,6 +34,7 @@ import Base from '../layouts/Base.astro';
    <Progress />
    <Manual />
    <Result />
+   <Ios />
    <Contributors />
 
    <footer class="foot">
