@@ -22,7 +22,7 @@ export const fetchBytes = async (url: string) =>
    new Uint8Array(await (await fetchOk(url)).arrayBuffer());
 
 /** Reads into one buffer sized by Content-Length, so a 170 MB split is not copied again. */
-async function read(response: Response, step: Step): Promise<Uint8Array> {
+async function read(response: Response, step: Step): Promise<Uint8Array<ArrayBuffer>> {
    if (!response.body) throw new Error(`${response.url}: no body`);
    const total = Number(response.headers.get('Content-Length')) || 0;
    const reader = response.body.getReader();
@@ -51,17 +51,25 @@ async function read(response: Response, step: Step): Promise<Uint8Array> {
    return length === buffer.length ? buffer : buffer.slice(0, length);
 }
 
-export async function download(code: number, split: string): Promise<Uint8Array> {
-   const step = new Step(`Download ${split}`);
-   const response = await fetch(`${PROXY}/tracker/download/${code}/${split}`);
+export async function downloadFile(url: string, label: string): Promise<Uint8Array<ArrayBuffer>> {
+   const step = new Step(`Download ${label}`);
+   const response = await fetch(url);
 
    if (!response.ok) {
       step.fail(`HTTP ${response.status}`);
-      throw new Error(`${split}: HTTP ${response.status}`);
+      throw new Error(`${label}: HTTP ${response.status}`);
    }
 
    return read(response, step);
 }
+
+export async function sha256(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
+   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+   return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export const download = (code: number, split: string) =>
+   downloadFile(`${PROXY}/tracker/download/${code}/${split}`, split);
 
 export async function tryDownload(code: number, split: string): Promise<Uint8Array | null> {
    const step = new Step(`Download ${split}`);

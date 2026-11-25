@@ -78,5 +78,12 @@ export const FRIDA = {
 /** The iOS loader the IPA patcher adds, built by sunbird's ios workflow. */
 export const IOS_LOADER = '/plugins/libphoenix-ios.dylib';
 
+/** A third-party mirror of the decrypted IPA the iOS patcher was checked against. */
+export const IOS_IPA = {
+   version: '357.0',
+   url: 'https://dl.redeem.saarland/ios/discord-357.0-124398.ipa',
+   sha256: '221fd57cd4157bd6aff39f9977c8127729c4d6169ddb2de3535e9c154f786e40',
+} as const;
+
 export const PACKAGE = 'com.discord';
 export const SIDE_LABEL = 'Discord Phoenix';

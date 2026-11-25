@@ -4,15 +4,18 @@
    </div>
    <div class="box ios">
       <p class="note">
-         Bring your own decrypted Discord 357.0 IPA. The site patches it in your browser with the
-         plugins picked above and never downloads Discord for you.
+         With no IPA selected, the site fetches a decrypted Discord 357.0 IPA from
+         dl.redeem.saarland, a third-party mirror Sunbird does not run, and checks it against a
+         known SHA-256. Select your own decrypted IPA to patch that one instead. Patching happens in
+         your browser with the plugins picked above.
       </p>
       <label class="file-picker">
          <input type="file" id="ipa-file" accept=".ipa,application/octet-stream">
          <span class="file-btn">Select IPA</span>
-         <span class="file-label" id="ipa-label">No IPA selected</span>
+         <span class="file-label" id="ipa-label">No IPA selected, Discord 357.0 is fetched</span>
       </label>
-      <button type="button" id="ipa-go" disabled>Patch IPA</button>
+      <button type="button" id="ipa-go">Patch IPA</button>
+      <p class="warn" id="ipa-warn" hidden></p>
       <p class="err" id="ipa-err" hidden></p>
       <div id="ipa-result" hidden>
          <!-- biome-ignore lint/a11y/useValidAnchor: ipa.ts sets href to the IPA's object URL -->
@@ -37,6 +40,15 @@
 .note {
    font-size: 13.5px;
    color: var(--muted);
+}
+
+.warn {
+   padding: 10px 12px;
+   font-size: 13.5px;
+   color: var(--warn);
+   background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+   border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+   border-radius: var(--radius);
 }
 
 .dl {
