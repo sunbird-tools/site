@@ -1,4 +1,4 @@
-import { IOS_IPA, IOS_LOADER } from '../lib/discord';
+import { IOS_IPA, IOS_LOADER, MIRROR, MIRRORED } from '../lib/discord';
 import { byId } from '../lib/dom';
 import { downloadFile, fetchBytes, sha256 } from '../lib/download';
 import { readPlugins } from '../lib/inputs';
@@ -46,11 +46,11 @@ function warn(text: string) {
 async function source(file: File | undefined): Promise<Blob | null> {
    const bytes = file
       ? new Uint8Array(await file.arrayBuffer())
-      : await downloadFile(IOS_IPA.url, `Discord ${IOS_IPA.version}`);
+      : await downloadFile(`${MIRROR}/${IOS_IPA.path}`, `Discord ${IOS_IPA.version}`);
    const step = new Step('Check SHA-256');
    step.progress(0.5, 'hashing…');
 
-   if ((await sha256(bytes)) === IOS_IPA.sha256) {
+   if ((await sha256(bytes)) === MIRRORED[IOS_IPA.path]) {
       step.done(`Discord ${IOS_IPA.version}`);
       return file ?? new Blob([bytes]);
    }
@@ -65,7 +65,7 @@ async function source(file: File | undefined): Promise<Blob | null> {
    }
 
    warn(
-      `The IPA from ${new URL(IOS_IPA.url).host} does not match its known SHA-256, so it may have been changed. It was not patched. Select your own decrypted IPA instead.`,
+      `The IPA from ${new URL(MIRROR).host} does not match its known SHA-256, so it may have been changed. It was not patched. Select your own decrypted IPA instead.`,
    );
    return null;
 }

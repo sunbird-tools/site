@@ -78,12 +78,38 @@ export const FRIDA = {
 /** The iOS loader the IPA patcher adds, built by sunbird's ios workflow. */
 export const IOS_LOADER = '/plugins/libphoenix-ios.dylib';
 
-/** A third-party mirror of the decrypted IPA the iOS patcher was checked against. */
-export const IOS_IPA = {
-   version: '357.0',
-   url: 'https://dl.redeem.saarland/ios/discord-357.0-124398.ipa',
-   sha256: '221fd57cd4157bd6aff39f9977c8127729c4d6169ddb2de3535e9c154f786e40',
-} as const;
+/** A third-party mirror of Discord builds. Each file's SHA-256 comes from its SHA256SUMS. */
+export const MIRROR = 'https://dl.redeem.saarland';
+
+export const MIRRORED: Readonly<Record<string, string>> = {
+   'android/357200/base.apk': '1f3876502a004bbc7533bd21cf6b724350b191d92d4e3eb907f0a80db7ee9922',
+   'android/357200/config.arm64_v8a.apk':
+      '51b92e03be15e94bbd5c3fcda5f38a3adfed29b47d36cedcbcfbddb3f2575381',
+   'android/357200/config.armeabi_v7a.apk':
+      '3f862b5c14c1e3d8a162d7011ee11a4a34be173a14d0afd5fc640dfc7877a362',
+   'android/357200/config.de.apk':
+      '9b7cd9a097df6f4a3b308e337874bf8cb2ed1a5ffddab7adbfc90733e3279793',
+   'android/357200/config.en.apk':
+      '921826907f170177ba77d4fcd65696fb5d08ec7399642c568a41a441547d8ed3',
+   'android/357200/config.hdpi.apk':
+      'b74de9651c5170ddccc91401c2b1382bf168812568f89a0ff6dfa23b90491d32',
+   'android/357200/config.xxhdpi.apk':
+      '509ccd11e8096ea8b8f9016c424e36f8b47e2614b4a7e9eb11f186af00b9a42e',
+   'ios/discord-357.0-124398.ipa':
+      '221fd57cd4157bd6aff39f9977c8127729c4d6169ddb2de3535e9c154f786e40',
+   'desktop/2233/linux-x64.AppImage':
+      '73808ee53da2ef0dc984571840bec0ed3311fa9e2ef1236ca01c5cd82f559abe',
+   'desktop/2233/macos-arm64.zip':
+      '069c63e381bb41a253946812949b8d7fae09e43be3f866466cfbd9db53d43f68',
+};
+
+/** The decrypted IPA the iOS patcher was checked against. */
+export const IOS_IPA = { version: '357.0', path: 'ios/discord-357.0-124398.ipa' } as const;
+
+export const DESKTOP = [
+   { name: 'Linux x64', path: 'desktop/2233/linux-x64.AppImage' },
+   { name: 'macOS arm64', path: 'desktop/2233/macos-arm64.zip' },
+] as const;
 
 export const PACKAGE = 'com.discord';
 export const SIDE_LABEL = 'Discord Phoenix';

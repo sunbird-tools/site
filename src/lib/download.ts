@@ -1,4 +1,4 @@
-import { DENSITIES, TRACKER, type Density } from './discord';
+import { DENSITIES, MIRROR, MIRRORED, TRACKER, type Density } from './discord';
 import { Step, megabytes } from './progress';
 
 const DEFAULT_PROXY = 'https://phoenix-apk-proxy.mantikafasi.workers.dev';
@@ -68,13 +68,43 @@ export async function sha256(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
    return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-export const download = (code: number, split: string) =>
-   downloadFile(`${PROXY}/tracker/download/${code}/${split}`, split);
+/** Splits the mirror carries come from it, checked against their pinned SHA-256. The rest come through the tracker proxy. */
+function fetchSplit(code: number, split: string): Promise<Response> {
+   const path = `android/${code}/${split}.apk`;
+   return fetch(
+      path in MIRRORED ? `${MIRROR}/${path}` : `${PROXY}/tracker/download/${code}/${split}`,
+   );
+}
+
+async function readSplit(code: number, split: string, response: Response, step: Step) {
+   const bytes = await read(response, step);
+   const pinned = MIRRORED[`android/${code}/${split}.apk`];
+
+   if (pinned && (await sha256(bytes)) !== pinned) {
+      throw new Error(
+         `${split} from ${new URL(MIRROR).host} does not match its known SHA-256, so it may have been changed`,
+      );
+   }
+
+   return bytes;
+}
+
+export async function download(code: number, split: string): Promise<Uint8Array<ArrayBuffer>> {
+   const step = new Step(`Download ${split}`);
+   const response = await fetchSplit(code, split);
+
+   if (!response.ok) {
+      step.fail(`HTTP ${response.status}`);
+      throw new Error(`${split}: HTTP ${response.status}`);
+   }
+
+   return readSplit(code, split, response, step);
+}
 
 export async function tryDownload(code: number, split: string): Promise<Uint8Array | null> {
    const step = new Step(`Download ${split}`);
-   const response = await fetch(`${PROXY}/tracker/download/${code}/${split}`);
-   if (response.ok) return read(response, step);
+   const response = await fetchSplit(code, split);
+   if (response.ok) return readSplit(code, split, response, step);
    step.done('not available');
    return null;
 }
