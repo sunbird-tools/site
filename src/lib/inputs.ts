@@ -1,4 +1,4 @@
-import { ABIS, DENSITIES, FRIDA, PACKAGE, type Abi, type Density } from './discord';
+import { ABIS, DENSITIES, FRIDA, PACKAGE, SIDE_LABEL, type Abi, type Density } from './discord';
 import { byId } from './dom';
 import { fetchOk } from './download';
 import { Step, log, megabytes } from './progress';
@@ -34,6 +34,11 @@ export function chosenPackage(): string {
    return byId('mode', HTMLSelectElement).value === 'replace'
       ? PACKAGE
       : byId('pkg', HTMLInputElement).value.trim();
+}
+
+/** The typed app name, or null to keep Discord's own when it replaces Discord. */
+export function chosenLabel(side: boolean): string | null {
+   return byId('label', HTMLInputElement).value.trim() || (side ? SIDE_LABEL : null);
 }
 
 export function checkPackage(): boolean {

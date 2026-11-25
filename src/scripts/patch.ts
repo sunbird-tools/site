@@ -1,4 +1,4 @@
-import { PACKAGE, SIDE_LABEL, type Abi } from '../lib/discord';
+import { PACKAGE, type Abi } from '../lib/discord';
 import { byId } from '../lib/dom';
 import {
    PROXY,
@@ -10,6 +10,7 @@ import {
 } from '../lib/download';
 import {
    checkPackage,
+   chosenLabel,
    chosenPackage,
    readFrida,
    readPlugins,
@@ -81,7 +82,7 @@ async function patchAndOffer(code: number, abi: Abi, apks: Uint8Array[]) {
       plugins,
       frida,
       packageName,
-      label: side ? SIDE_LABEL : null,
+      label: chosenLabel(side),
    });
    step.done(megabytes(apk.size));
 

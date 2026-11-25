@@ -54,6 +54,17 @@ const languageOptions = LANGUAGES.map((code) => ({
                ))}
             </select>
          </div>
+         <div class="field">
+            <label for="label">App name</label>
+            <input
+               type="text"
+               id="label"
+               placeholder="Discord"
+               maxlength="50"
+               spellcheck="false"
+               autocomplete="off"
+            >
+         </div>
       </div>
       <div class="field pkg-field" id="pkg-row" hidden>
          <label for="pkg">Package name</label>
@@ -112,7 +123,7 @@ label {
 </style>
 
 <script>
-import { DENSITIES, LANGUAGES, TRACKER, VERIFIED } from '../lib/discord';
+import { DENSITIES, LANGUAGES, SIDE_LABEL, TRACKER, VERIFIED } from '../lib/discord';
 import { byId } from '../lib/dom';
 import { checkPackage } from '../lib/inputs';
 
@@ -126,6 +137,7 @@ if (LANGUAGES.some((known) => known === language)) byId('lang', HTMLSelectElemen
 const mode = byId('mode', HTMLSelectElement);
 mode.onchange = () => {
    byId('pkg-row', HTMLDivElement).hidden = mode.value === 'replace';
+   byId('label', HTMLInputElement).placeholder = mode.value === 'replace' ? 'Discord' : SIDE_LABEL;
    checkPackage();
 };
 byId('pkg', HTMLInputElement).oninput = checkPackage;
