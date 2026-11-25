@@ -97,17 +97,23 @@ export const MIRRORED: Readonly<Record<string, string>> = {
       '509ccd11e8096ea8b8f9016c424e36f8b47e2614b4a7e9eb11f186af00b9a42e',
    'ios/discord-357.0-124398.ipa':
       '221fd57cd4157bd6aff39f9977c8127729c4d6169ddb2de3535e9c154f786e40',
-   'desktop/2233/linux-x64.AppImage':
-      '73808ee53da2ef0dc984571840bec0ed3311fa9e2ef1236ca01c5cd82f559abe',
    'desktop/2233/macos-arm64.zip':
       '069c63e381bb41a253946812949b8d7fae09e43be3f866466cfbd9db53d43f68',
+   'desktop/gbd95647/linux-x64.AppImage':
+      '8c4cb5773e34e8d5c5116d8e821ccc51e6c1978636704f2143600636142b059c',
+   'desktop/gb71ec80/linux-arm64.AppImage':
+      'c962cbddc1904f73245cb2223621b4421e281ad68d571da93a69e63debea225e',
+   'desktop/gb71ec80/windows-x64-setup.exe':
+      '981e3d0622fdafd6c58733137d75e7143d1344a6296b695369fb3fca0fae60cc',
 };
 
 /** The decrypted IPA the iOS patcher was checked against. */
 export const IOS_IPA = { version: '357.0', path: 'ios/discord-357.0-124398.ipa' } as const;
 
 export const DESKTOP = [
-   { os: 'linux', name: 'Linux x64', path: 'desktop/2233/linux-x64.AppImage' },
+   { os: 'windows', name: 'Windows x64', path: 'desktop/gb71ec80/windows-x64-setup.exe' },
+   { os: 'linux', name: 'Linux x64', path: 'desktop/gbd95647/linux-x64.AppImage' },
+   { os: 'linux', name: 'Linux arm64', path: 'desktop/gb71ec80/linux-arm64.AppImage' },
    { os: 'macos', name: 'macOS arm64', path: 'desktop/2233/macos-arm64.zip' },
 ] as const;
 
