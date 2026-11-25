@@ -32,7 +32,7 @@ function patch(request: IpaRequest): Promise<Blob> {
          reject(new Error(event.message));
       };
 
-      worker.postMessage(request, [request.ipa.buffer, request.loader.buffer]);
+      worker.postMessage(request, [request.loader.buffer]);
    });
 }
 
@@ -50,7 +50,7 @@ go.onclick = async () => {
       const loader = await fetchBytes(IOS_LOADER);
       const step = new Step('Patch IPA');
       step.progress(0.5, 'working…');
-      const ipa = await patch({ ipa: new Uint8Array(await file.arrayBuffer()), loader, plugins });
+      const ipa = await patch({ ipa: file, loader, plugins });
       step.done(megabytes(ipa.size));
 
       const link = byId('ipa-dl', HTMLAnchorElement);

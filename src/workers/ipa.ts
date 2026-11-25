@@ -15,12 +15,7 @@ scope.onmessage = async ({ data: request }) => {
    try {
       build.setLoader(request.loader);
       for (const { name, source } of request.plugins) build.addPlugin(name, source);
-      // `patch` returns a copy in its own ArrayBuffer, never a view of wasm memory.
-      const ipa = build.patch(request.ipa) as Uint8Array<ArrayBuffer>;
-      scope.postMessage({
-         kind: 'ipa',
-         ipa: new Blob([ipa], { type: 'application/octet-stream' }),
-      });
+      scope.postMessage({ kind: 'ipa', ipa: build.patch(request.ipa) });
    } catch (error) {
       scope.postMessage({
          kind: 'error',

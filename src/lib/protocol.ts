@@ -20,7 +20,7 @@ export interface Frida {
 }
 
 export interface IpaRequest {
-   ipa: Uint8Array;
+   ipa: Blob;
    loader: Uint8Array;
    plugins: PluginSource[];
 }
