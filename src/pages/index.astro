@@ -18,6 +18,11 @@ import Base from '../layouts/Base.astro';
    <header class="head">
       <h1>Sunbird</h1>
       <p class="lede">Unlock Discord's native client <em>and</em> bundle plugins!</p>
+      <p class="alpha-warn" role="note">
+         <b>Alpha builds.</b>{' '}These are unreleased Discord alpha builds and will contain bugs,
+         crashes, and missing features. Don't blame Discord or report bugs from these builds to
+         them.
+      </p>
       <Platforms />
    </header>
 
@@ -55,6 +60,20 @@ import Base from '../layouts/Base.astro';
    margin-top: 20px;
    font-size: 15.5px;
    color: var(--muted);
+}
+
+.alpha-warn {
+   margin-top: 20px;
+   padding: 10px 12px;
+   font-size: 13.5px;
+   color: var(--warn);
+   background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+   border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+   border-radius: var(--radius);
+
+   & b {
+      font-weight: 600;
+   }
 }
 
 .actions {
