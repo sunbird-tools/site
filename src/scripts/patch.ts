@@ -159,7 +159,7 @@ go.onclick = async () => {
    failure.hidden = true;
    byId('manual', HTMLElement).hidden = true;
    byId('result', HTMLElement).hidden = true;
-   resetProgress();
+   resetProgress('android');
    if (!PROXY) return showManual(splits);
 
    try {

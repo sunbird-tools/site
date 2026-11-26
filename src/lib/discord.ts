@@ -107,8 +107,8 @@ export const MIRRORED: Readonly<Record<string, string>> = {
 export const IOS_IPA = { version: '357.0', path: 'ios/discord-357.0-124398.ipa' } as const;
 
 export const DESKTOP = [
-   { name: 'Linux x64', path: 'desktop/2233/linux-x64.AppImage' },
-   { name: 'macOS arm64', path: 'desktop/2233/macos-arm64.zip' },
+   { os: 'linux', name: 'Linux x64', path: 'desktop/2233/linux-x64.AppImage' },
+   { os: 'macos', name: 'macOS arm64', path: 'desktop/2233/macos-arm64.zip' },
 ] as const;
 
 export const PACKAGE = 'com.discord';

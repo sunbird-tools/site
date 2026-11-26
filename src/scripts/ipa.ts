@@ -70,12 +70,17 @@ async function source(file: File | undefined): Promise<Blob | null> {
    return null;
 }
 
+function setBusy(busy: boolean) {
+   go.disabled = busy;
+   go.textContent = busy ? 'Patching…' : 'Patch IPA';
+}
+
 go.onclick = async () => {
-   go.disabled = true;
+   setBusy(true);
    warning.hidden = true;
    failure.hidden = true;
    byId('ipa-result', HTMLElement).hidden = true;
-   resetProgress();
+   resetProgress('ios');
 
    try {
       const ipa = await source(input.files?.[0]);
@@ -100,6 +105,6 @@ go.onclick = async () => {
       failure.textContent = `Patch failed: ${error instanceof Error ? error.message : String(error)}`;
       failure.hidden = false;
    } finally {
-      go.disabled = false;
+      setBusy(false);
    }
 };

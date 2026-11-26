@@ -42,8 +42,10 @@ export function log(line: string) {
    output.scrollTop = output.scrollHeight;
 }
 
-export function resetProgress() {
+export function resetProgress(owner?: string) {
    byId('steps', HTMLOListElement).replaceChildren();
    byId('log', HTMLPreElement).textContent = '';
-   byId('progress', HTMLElement).hidden = false;
+   const progress = byId('progress', HTMLElement);
+   if (owner) progress.dataset.owner = owner;
+   progress.hidden = false;
 }

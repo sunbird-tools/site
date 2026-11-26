@@ -3,6 +3,7 @@ import Contributors from '../components/Contributors.astro';
 import Desktop from '../components/Desktop.astro';
 import Ios from '../components/Ios.astro';
 import Manual from '../components/Manual.astro';
+import PlatformTabs from '../components/PlatformTabs.astro';
 import Platforms from '../components/Platforms.astro';
 import Plugins from '../components/Plugins.astro';
 import Progress from '../components/Progress.astro';
@@ -18,30 +19,81 @@ import Base from '../layouts/Base.astro';
    <header class="head">
       <h1>Sunbird</h1>
       <p class="lede">Unlock Discord's native client <em>and</em> bundle plugins!</p>
-      <p class="alpha-warn" role="note">
+      <p class="warn alpha-warn" role="note">
          <b>Alpha builds.</b>{' '}These are unreleased Discord alpha builds and will contain bugs,
          crashes, and missing features. Don't blame Discord or report bugs from these builds to
          them.
       </p>
-      <Platforms />
+      <PlatformTabs />
    </header>
 
-   <Setup />
-   <Plugins />
-
-   <div class="actions">
-      <div class="actions-inner">
-         <p class="summary" id="summary"></p>
-         <button type="button" id="go">Patch Discord</button>
+   <div class="tab-stage" id="tab-stage">
+      <div class="tab-lead" data-tabs="android">
+         <Setup />
       </div>
-      <p class="err" id="err" hidden></p>
+
+      <div class="tab-lead" data-tabs="ios">
+         <Ios />
+      </div>
+
+      <div data-tabs="android ios">
+         <Plugins />
+      </div>
+
+      <div class="actions" data-tabs="android">
+         <div class="actions-inner">
+            <p class="summary" id="summary"></p>
+            <button type="button" id="go">Patch Discord</button>
+         </div>
+         <p class="err" id="err" hidden></p>
+      </div>
+
+      <div class="actions" data-tabs="ios">
+         <div class="actions-inner">
+            <p class="summary" id="ipa-summary"></p>
+            <button type="button" id="ipa-go">Patch IPA</button>
+         </div>
+         <p class="warn" id="ipa-warn" hidden></p>
+         <p class="err" id="ipa-err" hidden></p>
+      </div>
+
+      <div data-tabs="android ios">
+         <Progress />
+      </div>
+
+      <div data-tabs="android">
+         <Manual />
+         <Result />
+      </div>
+
+      <div data-tabs="ios">
+         <section class="box result" id="ipa-result" hidden>
+            <!-- biome-ignore lint/a11y/useValidAnchor: ipa.ts sets href to the IPA's object URL -->
+            <a class="button dl" id="ipa-dl" download>Download patched IPA</a>
+            <ol class="steps-list">
+               <li>
+                  Sideload it with a tool that signs it for your device, like AltStore or
+                  Sideloadly.
+               </li>
+               <li>Open Discord, switch it to the new native client, then relaunch it.</li>
+            </ol>
+         </section>
+      </div>
+
+      <div class="tab-lead" data-tabs="windows">
+         <Desktop os="windows" />
+      </div>
+
+      <div class="tab-lead" data-tabs="linux">
+         <Desktop os="linux" />
+      </div>
+
+      <div class="tab-lead" data-tabs="macos">
+         <Desktop os="macos" />
+      </div>
    </div>
 
-   <Progress />
-   <Manual />
-   <Result />
-   <Ios />
-   <Desktop />
+   <Platforms />
    <Contributors />
 
    <footer class="foot">
@@ -52,7 +104,7 @@ import Base from '../layouts/Base.astro';
 
 <style>
 .head {
-   padding: 56px 0 8px;
+   padding: 56px 0 0;
 }
 
 .lede {
@@ -64,16 +116,19 @@ import Base from '../layouts/Base.astro';
 
 .alpha-warn {
    margin-top: 20px;
-   padding: 10px 12px;
-   font-size: 13.5px;
-   color: var(--warn);
-   background: color-mix(in srgb, var(--warn) 8%, var(--surface));
-   border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
-   border-radius: var(--radius);
+}
 
-   & b {
-      font-weight: 600;
-   }
+:global(:root:not([data-platform])) [data-tabs]:not([data-tabs~="android"]),
+:global(:root[data-platform="android"]) [data-tabs]:not([data-tabs~="android"]),
+:global(:root[data-platform="ios"]) [data-tabs]:not([data-tabs~="ios"]),
+:global(:root[data-platform="windows"]) [data-tabs]:not([data-tabs~="windows"]),
+:global(:root[data-platform="linux"]) [data-tabs]:not([data-tabs~="linux"]),
+:global(:root[data-platform="macos"]) [data-tabs]:not([data-tabs~="macos"]) {
+   display: none;
+}
+
+.tab-lead :global(.group) {
+   margin-top: 22px;
 }
 
 .actions {
@@ -115,9 +170,31 @@ import Base from '../layouts/Base.astro';
    }
 }
 
-#go {
+#go,
+#ipa-go {
    flex-shrink: 0;
    padding-inline: 22px;
+}
+
+.result {
+   margin-top: 14px;
+   padding: 16px;
+   border-color: var(--border-strong);
+}
+
+.dl {
+   width: 100%;
+}
+
+.steps-list {
+   margin: 14px 0 0;
+   padding-left: 18px;
+   font-size: 13.5px;
+   color: var(--muted);
+
+   & li {
+      padding: 2px 0;
+   }
 }
 
 @media (max-width: 560px) {
@@ -150,10 +227,90 @@ import Base from '../layouts/Base.astro';
 
 <script src="../scripts/patch.ts"></script>
 <script>
-import { PACKAGE } from '../lib/discord';
+import { IOS_IPA, PACKAGE } from '../lib/discord';
 import { byId } from '../lib/dom';
+import type { PlatformId } from '../lib/platforms';
+
+const VALID_TABS: readonly PlatformId[] = ['android', 'ios', 'windows', 'linux', 'macos'];
+const isTab = (value: string | undefined): value is PlatformId =>
+   VALID_TABS.includes(value as PlatformId);
+
+const root = document.documentElement;
+const tabs = [...document.querySelectorAll<HTMLButtonElement>('#platform-tabs [data-tab]')];
+const panels = [...document.querySelectorAll<HTMLElement>('[data-tabs]')];
+const advancedPanel = byId('advanced-panel', HTMLDetailsElement);
+const progress = byId('progress', HTMLElement);
+const steps = byId('steps', HTMLOListElement);
+
+function selectTab(next: PlatformId, updateHash = true) {
+   root.dataset.platform = next;
+
+   for (const tab of tabs) {
+      const active = tab.dataset.tab === next;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+   }
+
+   for (const panel of panels) {
+      const owners = panel.dataset.tabs?.split(' ') ?? [];
+      panel.hidden = !owners.includes(next);
+   }
+
+   advancedPanel.hidden = next !== 'android';
+
+   const hasSteps = steps.childElementCount > 0;
+   progress.hidden = !(hasSteps && progress.dataset.owner === next);
+
+   if (updateHash && location.hash !== `#${next}`) {
+      history.replaceState(null, '', `#${next}`);
+   }
+}
+
+for (const tab of tabs) {
+   tab.onclick = () => {
+      const target = tab.dataset.tab;
+      if (isTab(target)) selectTab(target);
+   };
+
+   tab.onkeydown = (event) => {
+      const current = tabs.indexOf(tab);
+      let nextIndex = -1;
+      if (event.key === 'ArrowRight') nextIndex = (current + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft') nextIndex = (current - 1 + tabs.length) % tabs.length;
+      else if (event.key === 'Home') nextIndex = 0;
+      else if (event.key === 'End') nextIndex = tabs.length - 1;
+      if (nextIndex === -1) return;
+
+      event.preventDefault();
+      const targetTab = tabs[nextIndex];
+      const target = targetTab?.dataset.tab;
+      if (targetTab && isTab(target)) {
+         selectTab(target);
+         targetTab.focus();
+      }
+   };
+}
+
+for (const card of document.querySelectorAll<HTMLButtonElement>('[data-select-tab]')) {
+   card.onclick = () => {
+      const target = card.dataset.selectTab;
+      if (!isTab(target)) return;
+      selectTab(target);
+      byId('platform-tabs', HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+   };
+}
+
+window.addEventListener('hashchange', () => {
+   const hash = location.hash.slice(1).toLowerCase();
+   if (isTab(hash)) selectTab(hash, false);
+});
+
+const initial = isTab(root.dataset.platform) ? root.dataset.platform : 'android';
+selectTab(initial, false);
 
 const summary = byId('summary', HTMLParagraphElement);
+const ipaSummary = byId('ipa-summary', HTMLParagraphElement);
+const ipaFile = byId('ipa-file', HTMLInputElement);
 const version = byId('ver', HTMLSelectElement);
 const mode = byId('mode', HTMLSelectElement);
 const pkg = byId('pkg', HTMLInputElement);
@@ -179,7 +336,8 @@ const update = () => {
    const bundled = document.querySelectorAll('#jsp-bundled input:checked').length;
    const custom = (customFiles.files?.length ?? 0) + (customCode.value.trim() ? 1 : 0);
    const total = bundled + custom;
-   const base = runtime.checked ? `${total} plugin${total === 1 ? '' : 's'}` : 'unlock only';
+   const pluginLabel = `${total} plugin${total === 1 ? '' : 's'}`;
+   const base = runtime.checked ? pluginLabel : 'unlock only';
    const extras = fridaOn.checked ? `${base} + Frida` : base;
    const target = mode.value === 'replace' ? PACKAGE : pkg.value.trim() || 'com.discord.phoenix';
 
@@ -189,6 +347,13 @@ const update = () => {
       part(extras, true),
       sep(),
       part(target),
+   );
+
+   const pickedIpa = ipaFile.files?.[0]?.name ?? `Discord ${IOS_IPA.version}`;
+   ipaSummary.replaceChildren(
+      part(pickedIpa, true),
+      sep(),
+      part(runtime.checked ? pluginLabel : '0 plugins', true),
    );
 };
 

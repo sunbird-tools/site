@@ -1,0 +1,195 @@
+---
+import { ICONS, PLATFORMS, STATUS, isSupported } from '../lib/platforms';
+---
+
+<nav class="platform-nav" id="platform-tabs" aria-label="Choose platform">
+   <div class="tablist" role="tablist" aria-label="Platform">
+      {PLATFORMS.map((platform) => {
+         const ready = isSupported(platform);
+         return (
+            <button
+               type="button"
+               role="tab"
+               class="tab"
+               id={`tab-${platform.id}`}
+               data-tab={platform.id}
+               aria-selected={platform.id === 'android' ? 'true' : 'false'}
+               tabindex={platform.id === 'android' ? 0 : -1}
+            >
+               <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d={ICONS[platform.icon]} />
+               </svg>
+               <span class="tab-name">{platform.name}</span>
+               {!ready && <span class="tab-badge" title="In progress">WIP</span>}
+            </button>
+         );
+      })}
+   </div>
+
+   {PLATFORMS.map((platform) => (
+      <div class="arch-strip" data-tabs={platform.id}>
+         <ul class="arch-list" aria-label={`${platform.name} architectures`}>
+            {platform.arches.map(([arch, status]) => (
+               <li class={`arch ${status}`} title={`${arch}: ${STATUS[status]}`}>
+                  <span class="arch-dot" aria-hidden="true" />
+                  <span class="arch-name">{arch}</span>
+                  <span class="arch-status">{STATUS[status]}</span>
+               </li>
+            ))}
+         </ul>
+      </div>
+   ))}
+</nav>
+
+<style>
+.platform-nav {
+   margin-top: 28px;
+}
+
+.tablist {
+   display: grid;
+   grid-template-columns: repeat(5, minmax(0, 1fr));
+   gap: 4px;
+   padding: 4px;
+   background: var(--surface);
+   border: 1px solid var(--border);
+   border-radius: var(--radius);
+}
+
+.tab {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 7px;
+   min-width: 0;
+   padding: 9px 10px;
+   font-size: 13.5px;
+   font-weight: 600;
+   letter-spacing: -0.01em;
+   color: var(--muted);
+   background: transparent;
+   border: 1px solid transparent;
+   border-radius: calc(var(--radius) - 1px);
+   cursor: pointer;
+   transition:
+      color 0.12s,
+      background-color 0.12s,
+      border-color 0.12s;
+
+   &:hover:not(:disabled) {
+      color: var(--text);
+      background: var(--hover);
+      border-color: transparent;
+   }
+}
+
+.tab-icon {
+   width: 14px;
+   height: 14px;
+   flex: none;
+   fill: currentColor;
+}
+
+.tab-name {
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.tab-badge {
+   padding: 1px 4px;
+   font: 600 10px / 1.3 var(--mono-family);
+   color: var(--warn);
+   background: color-mix(in srgb, var(--warn) 14%, transparent);
+   border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+   border-radius: 3px;
+}
+
+:global(:root:not([data-platform])) .tab[data-tab="android"],
+:global(:root[data-platform="android"]) .tab[data-tab="android"],
+:global(:root[data-platform="ios"]) .tab[data-tab="ios"],
+:global(:root[data-platform="windows"]) .tab[data-tab="windows"],
+:global(:root[data-platform="linux"]) .tab[data-tab="linux"],
+:global(:root[data-platform="macos"]) .tab[data-tab="macos"] {
+   color: var(--text);
+   background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+   border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
+
+   & .tab-icon {
+      color: var(--accent);
+   }
+}
+
+.arch-strip {
+   margin-top: 10px;
+}
+
+.arch-list {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px 14px;
+   margin: 0;
+   padding: 0 2px;
+   list-style: none;
+}
+
+.arch {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+   font: 500 11.5px / 1.4 var(--mono-family);
+   color: var(--muted);
+}
+
+.arch-dot {
+   width: 7px;
+   height: 7px;
+   border-radius: 50%;
+   background: var(--border-strong);
+
+   .ready & {
+      background: var(--ok);
+   }
+
+   .wip & {
+      background: var(--warn);
+   }
+}
+
+.arch-name {
+   color: var(--muted);
+
+   .ready &,
+   .wip & {
+      color: var(--text);
+   }
+}
+
+.arch-status {
+   font-family: var(--sans);
+   font-weight: 400;
+   font-size: 11.5px;
+   color: var(--muted);
+
+   .ready & {
+      color: var(--ok);
+   }
+
+   .wip & {
+      color: var(--warn);
+   }
+}
+
+@media (max-width: 560px) {
+   .tablist {
+      display: flex;
+      flex-wrap: wrap;
+   }
+
+   .tab {
+      flex: 1 0 calc(33.333% - 4px);
+      padding: 8px 6px;
+      font-size: 13px;
+   }
+}
+</style>

@@ -1,89 +1,122 @@
 ---
 import { DESKTOP, MIRROR, MIRRORED } from '../lib/discord';
 
+interface Props {
+   os: 'windows' | 'linux' | 'macos';
+}
+
+const { os } = Astro.props;
 const ASSETS = 'https://assets.sunbird.tools/plugins';
+const LINUX_CMD = `curl -fsSL ${ASSETS}/sunbird-linux.sh | sh`;
+const builds = DESKTOP.filter((build) => build.os === os);
+const mirrorHost = new URL(MIRROR).host;
 ---
 
 <section class="group">
    <div class="group-head">
-      <h2>Desktop</h2>
+      <h2>Install</h2>
    </div>
    <div class="box desktop">
-      <p class="note">
-         <b>Install Discord Phoenix first.</b>{' '}Sunbird starts it with the runtime loaded and
-         updates itself on every launch. Discord's own files are never changed, so Discord updates
-         don't undo it.
-      </p>
-      <p class="warn" role="note">
-         <b>The plugin runtime is experimental.</b>{' '}It hooks into Discord's internals, so a
-         Discord build it hasn't seen yet can crash on startup or break features. If Discord crashes
-         or misbehaves with Sunbird, use access gate only below.
-      </p>
+      {os === 'macos' && (
+         <p class="warn status-note" role="note">
+            <b>In progress.</b>{' '}Sunbird for macOS (arm64) is still being built and does not have
+            an installer yet. Follow progress on{' '}
+            <a href="https://github.com/sunbird-tools/sunbird">GitHub</a>.
+         </p>
+      )}
+      {os !== 'macos' && (
+         <p class="note">
+            <b>Install Discord Phoenix first.</b>{' '}Sunbird starts it with the runtime loaded and
+            updates itself on every launch. Discord's own files are never changed, so Discord
+            updates don't undo it.
+         </p>
+      )}
+      {os !== 'macos' && (
+         <p class="warn status-note" role="note">
+            <b>The plugin runtime is experimental.</b>{' '}It hooks into Discord's internals, so a
+            Discord build it hasn't seen yet can crash on startup or break features. If Discord
+            crashes or misbehaves with Sunbird, use access gate only below.
+         </p>
+      )}
 
-      <div class="os">
-         <h3>Discord Phoenix</h3>
-         <p class="note">
-            Build 2233 from {new URL(MIRROR).host}, a third-party mirror Sunbird does not run.
-            Compare the SHA-256 of what you download with the one listed here.
-         </p>
-         <ul class="builds">
-            {DESKTOP.map((build) => (
-                  <li>
-                     <a class="button dl" href={`${MIRROR}/${build.path}`}>
-                        {build.name}
-                     </a>
-                     <code>{MIRRORED[build.path]}</code>
-                  </li>
-               ))}
-         </ul>
-      </div>
+      {builds.length > 0 && (
+         <div class="os">
+            <h3>Discord Phoenix</h3>
+            <p class="note">
+               Build 2233 from {mirrorHost}, a third-party mirror Sunbird does not run. Compare the
+               SHA-256 of what you download with the one listed here.
+            </p>
+            <ul class="builds">
+               {builds.map((build) => (
+                     <li>
+                        <a class="button dl" href={`${MIRROR}/${build.path}`}>
+                           Download {build.name}
+                        </a>
+                        <code>{MIRRORED[build.path]}</code>
+                     </li>
+                  ))}
+            </ul>
+         </div>
+      )}
 
-      <div class="os">
-         <h3>Windows</h3>
-         <a
-            class="button dl"
-            href={`${ASSETS}/sunbird-windows-x86_64.exe`}
-            download="SunbirdSetup.exe"
-         >
-            Download for Windows
-         </a>
-         <p class="note">
-            Run it once. It installs to <code>%LOCALAPPDATA%\Sunbird</code> and adds a Sunbird
-            shortcut to the Start Menu and Desktop. Uninstall with{' '}
-            <code>sunbird.exe --uninstall</code>{' '}in that folder.
-         </p>
-      </div>
+      {os === 'windows' && (
+         <div class="os">
+            <h3>Sunbird</h3>
+            <a
+               class="button dl"
+               href={`${ASSETS}/sunbird-windows-x86_64.exe`}
+               download="SunbirdSetup.exe"
+            >
+               Download for Windows
+            </a>
+            <p class="note">
+               Run it once. It installs to <code>%LOCALAPPDATA%\Sunbird</code> and adds a Sunbird
+               shortcut to the Start Menu and Desktop. Uninstall with{' '}
+               <code>sunbird.exe --uninstall</code>{' '}in that folder.
+            </p>
+         </div>
+      )}
 
-      <div class="os">
-         <h3>Linux</h3>
-         <pre>curl -fsSL {ASSETS}/sunbird-linux.sh | sh</pre>
-         <p class="note">
-            It finds <code>discord-phoenix</code> on your <code>PATH</code> or a{' '}
-            <code>discord-desktop*.AppImage</code>{' '}in <code>~/Applications</code> or{' '}
-            <code>~/Downloads</code>. To use another AppImage, end the command with{' '}
-            <code>sh -s -- /path/to/AppImage</code>. It adds a Sunbird entry to your app menu. To
-            uninstall, end it with <code>sh -s -- --uninstall</code>.
-         </p>
-      </div>
+      {os === 'linux' && (
+         <div class="os">
+            <h3>Sunbird</h3>
+            <div class="cmd-row">
+               <pre>{LINUX_CMD}</pre>
+               <button type="button" class="copy-btn" data-copy={LINUX_CMD}>Copy</button>
+            </div>
+            <p class="note">
+               It finds <code>discord-phoenix</code> on your <code>PATH</code> or a{' '}
+               <code>discord-desktop*.AppImage</code>{' '}in <code>~/Applications</code> or{' '}
+               <code>~/Downloads</code>. To use another AppImage, end the command with{' '}
+               <code>sh -s -- /path/to/AppImage</code>. It adds a Sunbird entry to your app menu. To
+               uninstall, end it with <code>sh -s -- --uninstall</code>.
+            </p>
+         </div>
+      )}
 
-      <div class="os">
-         <h3>Access gate only</h3>
-         <p class="note">
-            Gets you past Discord's access gate without loading plugins or hooking anything else.
-            It's the safe option when the plugin runtime crashes.
-         </p>
-         <p class="note">
-            <b>Windows:</b>{' '}run <code>sunbird.exe --no-runtime</code>{' '}in{' '}
-            <code>%LOCALAPPDATA%\Sunbird</code>. The shortcuts load the runtime, so add{' '}
-            <code>--no-runtime</code>{' '}to a shortcut's target to keep using it.
-         </p>
-         <p class="note"><b>Linux:</b>{' '}install with</p>
-         <pre>curl -fsSL {ASSETS}/sunbird-linux.sh | sh -s -- --no-runtime</pre>
-         <p class="note">
-            The Sunbird app menu entry then opens only the access gate. Run the plain install
-            command again to get plugins back.
-         </p>
-      </div>
+      {os !== 'macos' && (
+         <div class="os">
+            <h3>Access gate only</h3>
+            <p class="note">
+               Gets you past Discord&apos;s access gate without loading plugins or hooking anything
+               else. It&apos;s the safe option when the plugin runtime crashes.
+            </p>
+            {os === 'windows' && (
+               <p class="note">
+                  The installer adds a <b>Sunbird (access gate only)</b>{' '}shortcut to the Start
+                  Menu. Open that one instead of Sunbird. Already installed? Download Sunbird for
+                  Windows again to get it.
+               </p>
+            )}
+            {os === 'linux' && (
+               <p class="note">
+                  The installer adds a <b>Sunbird (access gate only)</b>{' '}entry to your app menu.
+                  Open that one instead of Sunbird. Already installed? Rerun the install command
+                  above to get it.
+               </p>
+            )}
+         </div>
+      )}
    </div>
 </section>
 
@@ -94,25 +127,15 @@ const ASSETS = 'https://assets.sunbird.tools/plugins';
    padding: 16px;
 }
 
+.status-note {
+   margin-top: 0;
+}
+
 .os {
    display: grid;
    gap: 10px;
    padding-top: 16px;
    border-top: 1px solid var(--border);
-}
-
-.warn {
-   margin: 0;
-   padding: 10px 12px;
-   font-size: 13.5px;
-   color: var(--warn);
-   background: color-mix(in srgb, var(--warn) 8%, var(--surface));
-   border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
-   border-radius: var(--radius);
-
-   & b {
-      font-weight: 600;
-   }
 }
 
 h3 {
@@ -144,7 +167,15 @@ h3 {
    }
 }
 
+.cmd-row {
+   display: flex;
+   align-items: stretch;
+   gap: 8px;
+}
+
 pre {
+   flex: 1;
+   min-width: 0;
    margin: 0;
    padding: 10px 12px;
    overflow-x: auto;
@@ -155,4 +186,37 @@ pre {
    border-radius: var(--radius);
    user-select: all;
 }
+
+.copy-btn {
+   flex-shrink: 0;
+   padding: 8px 14px;
+   font-size: 13px;
+   font-weight: 600;
+   color: var(--text);
+   background: var(--surface-2);
+   border: 1px solid var(--border-strong);
+
+   &:hover:not(:disabled) {
+      background: var(--hover);
+      border-color: var(--text);
+   }
+}
 </style>
+
+<script>
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+   button.onclick = async () => {
+      const text = button.dataset.copy;
+      if (!text) return;
+      try {
+         await navigator.clipboard.writeText(text);
+         button.textContent = 'Copied';
+         window.setTimeout(() => {
+            button.textContent = 'Copy';
+         }, 1500);
+      } catch {
+         button.textContent = 'Failed';
+      }
+   };
+}
+</script>

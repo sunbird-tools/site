@@ -168,6 +168,20 @@ textarea {
    border-radius: var(--radius);
 }
 
+.warn {
+   margin-top: 10px;
+   padding: 10px 12px;
+   font-size: 13.5px;
+   color: var(--warn);
+   background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+   border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+   border-radius: var(--radius);
+
+   & b {
+      font-weight: 600;
+   }
+}
+
 select,
 input[type="text"],
 textarea {
@@ -382,7 +396,8 @@ button,
    }
 }
 
-#go:not(:disabled)::after {
+#go:not(:disabled)::after,
+#ipa-go:not(:disabled)::after {
    content: "";
    width: 14px;
    height: 14px;
@@ -393,6 +408,7 @@ button,
    transition: translate 0.12s;
 }
 
-#go:hover:not(:disabled)::after {
+#go:hover:not(:disabled)::after,
+#ipa-go:hover:not(:disabled)::after {
    translate: 3px 0;
 }

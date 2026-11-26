@@ -20,6 +20,24 @@ const { title, description } = Astro.props;
       {
          const theme = localStorage.getItem('theme');
          if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+
+         const tabs = ['android', 'ios', 'windows', 'linux', 'macos'];
+         const hash = location.hash.slice(1).toLowerCase();
+         let platform = tabs.includes(hash) ? hash : '';
+         if (!platform) {
+            const ua = navigator.userAgent;
+            if (/Android/i.test(ua)) platform = 'android';
+            else if (
+               /iPhone|iPad|iPod/i.test(ua) ||
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+            )
+               platform = 'ios';
+            else if (/Windows/i.test(ua)) platform = 'windows';
+            else if (/Mac OS X|Macintosh/i.test(ua)) platform = 'macos';
+            else if (/Linux/i.test(ua)) platform = 'linux';
+            else platform = 'android';
+         }
+         document.documentElement.dataset.platform = platform;
       }
       </script>
       <title>{title}</title>
