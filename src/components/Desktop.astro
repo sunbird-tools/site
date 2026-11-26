@@ -8,6 +8,7 @@ interface Props {
 const { os } = Astro.props;
 const ASSETS = 'https://assets.sunbird.tools/plugins';
 const LINUX_CMD = `curl -fsSL ${ASSETS}/sunbird-linux.sh | sh`;
+const MACOS_CMD = `curl -fsSL ${ASSETS}/sunbird-macos.sh | sh`;
 const builds = DESKTOP.filter((build) => build.os === os);
 const mirrorHost = new URL(MIRROR).host;
 ---
@@ -19,8 +20,8 @@ const mirrorHost = new URL(MIRROR).host;
    <div class="box desktop">
       {os === 'macos' && (
          <p class="warn status-note" role="note">
-            <b>In progress.</b>{' '}Sunbird for macOS (arm64) is still being built and does not have
-            an installer yet. Follow progress on{' '}
+            <b>Access gate only.</b>{' '}On macOS (Apple silicon), Sunbird only gets you past
+            Discord&apos;s access gate. Plugins don&apos;t run on macOS yet. Follow progress on{' '}
             <a href="https://github.com/sunbird-tools/sunbird">GitHub</a>.
          </p>
       )}
@@ -90,6 +91,24 @@ const mirrorHost = new URL(MIRROR).host;
                <code>~/Downloads</code>. To use another AppImage, end the command with{' '}
                <code>sh -s -- /path/to/AppImage</code>. It adds a Sunbird entry to your app menu. To
                uninstall, end it with <code>sh -s -- --uninstall</code>.
+            </p>
+         </div>
+      )}
+
+      {os === 'macos' && (
+         <div class="os">
+            <h3>Sunbird</h3>
+            <div class="cmd-row">
+               <pre>{MACOS_CMD}</pre>
+               <button type="button" class="copy-btn" data-copy={MACOS_CMD}>Copy</button>
+            </div>
+            <p class="note">
+               Install Discord Phoenix in <code>Applications</code> first. Run this in Terminal: it
+               adds a Sunbird app to <code>~/Applications</code>. Open Sunbird instead of Discord.
+               It runs a signed copy of Discord Phoenix and never changes the original. For an app
+               somewhere else, end the command with{' '}
+               <code>sh -s -- "/path/to/Discord Phoenix.app"</code>. To uninstall, end it with{' '}
+               <code>sh -s -- --uninstall</code>.
             </p>
          </div>
       )}
