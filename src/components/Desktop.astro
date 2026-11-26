@@ -14,6 +14,11 @@ const ASSETS = 'https://assets.sunbird.tools/plugins';
          updates itself on every launch. Discord's own files are never changed, so Discord updates
          don't undo it.
       </p>
+      <p class="warn" role="note">
+         <b>The plugin runtime is experimental.</b>{' '}It hooks into Discord's internals, so a
+         Discord build it hasn't seen yet can crash on startup or break features. If Discord crashes
+         or misbehaves with Sunbird, use access gate only below.
+      </p>
 
       <div class="os">
          <h3>Discord Phoenix</h3>
@@ -60,6 +65,25 @@ const ASSETS = 'https://assets.sunbird.tools/plugins';
             uninstall, end it with <code>sh -s -- --uninstall</code>.
          </p>
       </div>
+
+      <div class="os">
+         <h3>Access gate only</h3>
+         <p class="note">
+            Gets you past Discord's access gate without loading plugins or hooking anything else.
+            It's the safe option when the plugin runtime crashes.
+         </p>
+         <p class="note">
+            <b>Windows:</b>{' '}run <code>sunbird.exe --no-runtime</code>{' '}in{' '}
+            <code>%LOCALAPPDATA%\Sunbird</code>. The shortcuts load the runtime, so add{' '}
+            <code>--no-runtime</code>{' '}to a shortcut's target to keep using it.
+         </p>
+         <p class="note"><b>Linux:</b>{' '}install with</p>
+         <pre>curl -fsSL {ASSETS}/sunbird-linux.sh | sh -s -- --no-runtime</pre>
+         <p class="note">
+            The Sunbird app menu entry then opens only the access gate. Run the plain install
+            command again to get plugins back.
+         </p>
+      </div>
    </div>
 </section>
 
@@ -75,6 +99,20 @@ const ASSETS = 'https://assets.sunbird.tools/plugins';
    gap: 10px;
    padding-top: 16px;
    border-top: 1px solid var(--border);
+}
+
+.warn {
+   margin: 0;
+   padding: 10px 12px;
+   font-size: 13.5px;
+   color: var(--warn);
+   background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+   border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+   border-radius: var(--radius);
+
+   & b {
+      font-weight: 600;
+   }
 }
 
 h3 {
