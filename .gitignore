@@ -5,6 +5,7 @@
 !.github/
 !.github/workflows/
 !.github/workflows/*.yml
+!.github/logo.png
 !LICENSE
 !README.md
 !flake.nix

@@ -1,3 +1,5 @@
+<p align="center"><img src=".github/logo.png" alt="sunbird" width="172"></p>
+
 # sunbird.tools
 
 The site for [sunbird](https://github.com/sunbird-tools/sunbird). It patches Discord's Phoenix
