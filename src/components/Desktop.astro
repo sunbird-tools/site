@@ -18,27 +18,17 @@ const mirrorHost = new URL(MIRROR).host;
       <h2>Install</h2>
    </div>
    <div class="box desktop">
-      {os === 'macos' && (
-         <p class="warn status-note" role="note">
-            <b>Access gate only.</b>{' '}On macOS (Apple silicon), Sunbird only gets you past
-            Discord&apos;s access gate. Plugins don&apos;t run on macOS yet. Follow progress on{' '}
-            <a href="https://github.com/sunbird-tools/sunbird">GitHub</a>.
-         </p>
-      )}
-      {os !== 'macos' && (
-         <p class="note">
-            <b>Install Discord Phoenix first.</b>{' '}Sunbird starts it with the runtime loaded and
-            updates itself on every launch. Discord's own files are never changed, so Discord
-            updates don't undo it.
-         </p>
-      )}
-      {os !== 'macos' && (
-         <p class="warn status-note" role="note">
-            <b>The plugin runtime is experimental.</b>{' '}It hooks into Discord's internals, so a
-            Discord build it hasn't seen yet can crash on startup or break features. If Discord
-            crashes or misbehaves with Sunbird, use access gate only below.
-         </p>
-      )}
+      <p class="note">
+         <b>Install Discord Phoenix first.</b>{' '}Sunbird starts it with the runtime loaded and
+         updates itself on every launch. Discord's own files are never changed, so Discord updates
+         don't undo it.
+      </p>
+      <p class="warn status-note" role="note">
+         <b>The plugin runtime is experimental.</b>{' '}It hooks into Discord's internals, so a
+         Discord build it hasn't seen yet can crash on startup or break features.
+         {os !== 'macos' && ' If Discord crashes or misbehaves with Sunbird, use access gate only below.'}
+         {os === 'macos' && ' On macOS it needs Apple silicon.'}
+      </p>
 
       {builds.length > 0 && (
          <div class="os">
@@ -103,7 +93,7 @@ const mirrorHost = new URL(MIRROR).host;
                <button type="button" class="copy-btn" data-copy={MACOS_CMD}>Copy</button>
             </div>
             <p class="note">
-               Install Discord Phoenix in <code>Applications</code> first. Run this in Terminal: it
+               Keep Discord Phoenix in <code>Applications</code>. Run this in Terminal: it
                adds a Sunbird app to <code>~/Applications</code>. Open Sunbird instead of Discord.
                It runs a signed copy of Discord Phoenix and never changes the original. For an app
                somewhere else, end the command with{' '}

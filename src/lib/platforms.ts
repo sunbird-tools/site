@@ -72,7 +72,7 @@ export const PLATFORMS: readonly PlatformInfo[] = [
       group: 'Desktop',
       icon: 'apple',
       arches: [
-         ['arm64', 'wip'],
+         ['arm64', 'ready'],
          ['x86_64', 'planned'],
       ],
    },
